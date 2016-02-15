@@ -11,4 +11,4 @@ settings.py
 .idea/
 
 nightlifeenv/
-
+nightlife/static/
