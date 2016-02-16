@@ -19,14 +19,15 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from apiusers import views
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'groups', views.GroupViewSet)
+# router = routers.DefaultRouter()
+# router.register(r'users', views.UserViewSet)
+# router.register(r'groups', views.GroupViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^', include(router.urls)),
+    # url(r'^', include(router.urls)),
     url(r'^', include('places.urls')),
+    url(r'^', include('apiusers.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^auth/', include('rest_framework_social_oauth2.urls'))
 ]

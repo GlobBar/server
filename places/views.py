@@ -1,61 +1,58 @@
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
 from places.models import Place
 from places.serializers import PlaceSerializer
-from rest_framework import filters
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import permissions
 
 
-class JSONResponse(HttpResponse):
+class SnippetList(APIView):
     """
-    An HttpResponse that renders its content into JSON.
+    List all snippets, or create a new snippet.
     """
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+    permission_classes = (permissions.IsAuthenticated,)
 
-@csrf_exempt
-def snippet_list(request):
-    """
-    List all code snippets, or create a new snippet.
-    """
-    if request.method == 'GET':
-        snippets = Place.objects.all().order_by('created').reverse()
-        serializer = PlaceSerializer(snippets, many=True)
-        return JSONResponse(serializer.data)
+    def get(self, request, format=None):
+        places = Place.objects.all()
+        serializer = PlaceSerializer(places, many=True)
+        return Response(serializer.data)
 
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = PlaceSerializer(data=data)
+    def post(self, request, format=None):
+        serializer = PlaceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JSONResponse(serializer.data, status=201)
-        return JSONResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@csrf_exempt
-def snippet_detail(request, pk):
+
+class SnippetDetail(APIView):
     """
-    Retrieve, update or delete a code snippet.
+    Retrieve, update or delete a snippet instance.
     """
-    try:
-        snippet = Place.objects.get(pk=pk)
-    except Place.DoesNotExist:
-        return HttpResponse(status=404)
+    permission_classes = (permissions.IsAuthenticated,)
 
-    if request.method == 'GET':
-        serializer = PlaceSerializer(snippet)
-        return JSONResponse(serializer.data)
+    def get_object(self, pk):
+        try:
+            return Place.objects.get(pk=pk)
+        except Place.DoesNotExist:
+            raise Http404
 
-    elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = PlaceSerializer(snippet, data=data)
+    def get(self, request, pk, format=None):
+        place = self.get_object(pk)
+        serializer = PlaceSerializer(place)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        place = self.get_object(pk)
+        serializer = PlaceSerializer(place, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JSONResponse(serializer.data)
-        return JSONResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == 'DELETE':
-        snippet.delete()
-        return HttpResponse(status=204)
+    def delete(self, request, pk, format=None):
+        place = self.get_object(pk)
+        place.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
