@@ -16,9 +16,9 @@ Including another URLconf
 
 from django.contrib import admin
 from django.conf.urls import url, include
-from rest_framework import routers
-from apiusers import views
-
+from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from files.views import ConvertTokenViewCustom
 # router = routers.DefaultRouter()
 # router.register(r'users', views.UserViewSet)
 # router.register(r'groups', views.GroupViewSet)
@@ -28,6 +28,15 @@ urlpatterns = [
     # url(r'^', include(router.urls)),
     url(r'^', include('places.urls')),
     url(r'^', include('apiusers.urls')),
+    url(r'^', include('files.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^auth/', include('rest_framework_social_oauth2.urls'))
+    url(r'^auth/convert-token/?$', ConvertTokenViewCustom.as_view(), name="convert_token"),
+    url(r'^auth/', include('rest_framework_social_oauth2.urls')),
+    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
+                                'document_root': settings.MEDIA_ROOT,
+                                }),
+
 ]
+
+urlpatterns += staticfiles_urlpatterns()
+

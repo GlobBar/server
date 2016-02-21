@@ -1,13 +1,15 @@
 from __future__ import unicode_literals
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
+from files.models import ProfileImage
+from django.conf import settings
 
 
 class UserSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
     username = serializers.CharField(required=True, allow_blank=True, max_length=100)
     email = serializers.CharField(required=True, allow_blank=True, max_length=250)
-
+    profile_image = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         """
@@ -19,13 +21,29 @@ class UserSerializer(serializers.Serializer):
         """
         Update and return an existing `Snippet` instance, given the validated data.
         """
-        # instance.title = validated_data.get('title', instance.title)
-        # instance.address = validated_data.get('address', instance.address)
-        # instance.description = validated_data.get('description', instance.description)
-        # instance.enable = validated_data.get('enable', instance.enable)
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
 
         instance.save()
         return instance
+
+    def get_profile_image(self, obj):
+        try:
+            profile_image = ProfileImage.objects.get(owner=obj)
+            puth = str(profile_image.image)
+            is_absolut_puth = puth.find('http')
+
+            if is_absolut_puth == -1:
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/'
+                my_file += puth
+            else:
+                my_file = puth
+
+        except ProfileImage.DoesNotExist:
+            my_file = None
+
+        return my_file
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
