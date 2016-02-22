@@ -17,10 +17,13 @@ import requests
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser,)
 
-    def post(self, request, pk,  format=None):
+    def post(self, request, format=None):
         file_obj = request.data['file']
+        user_pk = request.data['user_pk']
+        # import ipdb; ipdb.set_trace()
+
         try:
-            user = User.objects.get(id=pk)
+            user = User.objects.get(id=user_pk)
         except User.DoesNotExist:
             return Response({'pk': ('Invalid pk')}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -54,7 +57,11 @@ class ConvertTokenViewCustom(ConvertTokenView):
         res = super(ConvertTokenViewCustom, self).post(request, *args, **kwargs)
 
         profile_picture_url = None
-        acc_token = json.loads(res.content)['access_token']
+        try:
+            acc_token = json.loads(res.content)['access_token']
+        except :
+            return res
+
         user = AccessToken.objects.get(token=acc_token).user
         user_soc_auth = UserSocialAuth.objects.get(user=user)
 
