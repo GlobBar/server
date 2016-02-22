@@ -56,7 +56,14 @@ class ConvertTokenViewCustom(ConvertTokenView):
 
         res = super(ConvertTokenViewCustom, self).post(request, *args, **kwargs)
 
-        profile_picture_url = None
+        anonim = settings.MEDIA_ROOT
+        anonim += '/anonim.jpg'
+        if os.path.isfile(anonim):
+            profile_picture_url = 'anonim.jpg'
+        else:
+            profile_picture_url = None
+
+
         try:
             acc_token = json.loads(res.content)['access_token']
         except :
@@ -76,12 +83,18 @@ class ConvertTokenViewCustom(ConvertTokenView):
                 pass
 
             path = 'https://api.instagram.com/v1/users/'+user_soc_auth.uid+'/?access_token='+user_soc_auth.extra_data['access_token']
-            profile_picture_url = requests.get(path).json()['data']['profile_picture']
+            try:
+                url = requests.get(path).json()['data']['profile_picture']
+                profile_picture_url = url
+            except:
+                pass
 
         elif backend == 'facebook':
-
-            profile_picture_url ='http://graph.facebook.com/'+user_soc_auth.uid+'/picture?type=large'
-
+            try:
+                url ='http://graph.facebook.com/'+user_soc_auth.uid+'/picture?type=large'
+                profile_picture_url = url
+            except:
+                pass
         try:
             # If avatar already exist do nothing
             profileimage = ProfileImage.objects.get(owner=user)

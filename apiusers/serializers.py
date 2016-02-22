@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from files.models import ProfileImage
 from django.conf import settings
-
+import os
 
 class UserSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -41,7 +41,13 @@ class UserSerializer(serializers.Serializer):
                 my_file = puth
 
         except ProfileImage.DoesNotExist:
-            my_file = None
+            anonim = settings.MEDIA_ROOT
+            anonim += '/anonim.jpg'
+            if os.path.isfile(anonim):
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/anonim.jpg'
+            else:
+                my_file = None
 
         return my_file
 
