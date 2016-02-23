@@ -14,6 +14,7 @@ import json
 import requests
 from report.models import Report
 from report.serializers import ReportSerializer
+from places.models import Place
 
 
 class FileUploadView(APIView):
@@ -62,6 +63,11 @@ class ReportFileUploadView(APIView):
         user = request.user
         # import ipdb; ipdb.set_trace()
 
+        try:
+            place = Place.objects.get(id=place_pk)
+        except Place.DoesNotExist:
+            return Response({'pk': ('Invalid pk')}, status=status.HTTP_400_BAD_REQUEST)
+
         report_image = ReportImage(image=file_obj, owner=user, )
 
         report_image.save()
@@ -76,7 +82,7 @@ class ReportFileUploadView(APIView):
             queue=0,
             type=1,  # (0 - report, 1 - picture)
             user=user,
-            place_id=place_pk,
+            place=place,
             report_image=report_image
         )
         report.save()
