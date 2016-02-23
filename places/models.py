@@ -21,3 +21,12 @@ class Checkin(models.Model):
 
     class Meta:
         ordering = ('id', )
+
+
+class Like(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering = ('id', )

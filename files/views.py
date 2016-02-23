@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
-from files.models import ProfileImage
+from files.models import ProfileImage, ReportImage
 from rest_framework import status
 from apiusers.serializers import UserSerializer
 import os
@@ -12,6 +12,8 @@ from oauth2_provider.models import AccessToken
 from social.apps.django_app.default.models import UserSocialAuth
 import json
 import requests
+from report.models import Report
+from report.serializers import ReportSerializer
 
 
 class FileUploadView(APIView):
@@ -48,6 +50,38 @@ class FileUploadView(APIView):
         self.id = profileimage.id
 
         serializer = UserSerializer(user, many=False)
+        return Response(serializer.data)
+
+
+class ReportFileUploadView(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, format=None):
+        file_obj = request.data['file']
+        place_pk = request.data['place_pk']
+        user = request.user
+        # import ipdb; ipdb.set_trace()
+
+        report_image = ReportImage(image=file_obj, owner=user, )
+
+        report_image.save()
+        self.id = report_image.id
+
+        report = Report(
+            is_going=True,
+            bar_filling=0,
+            music_type=0,
+            gender_relation=0,
+            charge=0,
+            queue=0,
+            type=1,  # (0 - report, 1 - picture)
+            user=user,
+            place_id=place_pk,
+            report_image=report_image
+        )
+        report.save()
+
+        serializer = ReportSerializer(report, many=False)
         return Response(serializer.data)
 
 
