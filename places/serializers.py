@@ -35,18 +35,24 @@ class CheckinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Checkin
-        fields = ('pk', 'place', 'user',)
+        fields = ('pk', 'user', )
 
     def save(self, **kwargs):
+
+        checkin = Checkin.objects.filter(user=self.context['request'].user).first()
+        if checkin is not None:
+            checkin.delete()
+
         checkin = super(CheckinSerializer, self).save(**kwargs)
         checkin.user = self.context['request'].user
+
         try:
             place = Place.objects.get(pk=self.context['request'].POST.get('place_pk'))
             checkin.place = place
         except Place.DoesNotExist:
             raise Http404
-
-        return checkin.save()
+        checkin.save()
+        return checkin
 
 
 class LikeSerializer(serializers.ModelSerializer):
