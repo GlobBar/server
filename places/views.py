@@ -12,9 +12,47 @@ class SnippetList(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-        places = Place.objects.all()
+        # places = Place.objects.all()
+        # import ipdb; ipdb.set_trace()
+        limitFrom = str(request.GET.get('limit_from'))
+        limitCount = str(request.GET.get('limit_count'))
 
-        
+        if limitFrom == 'None':
+            limitFrom = '0'
+        if limitCount == 'None':
+            limitCount = '3'
+
+
+
+        places = Place.objects.raw(
+            'SELECT '
+                'places_place.id , '
+                'places_place.title, '
+                'places_place.address, '
+                'places_place.description, '
+                'places_place.enable, '
+                'places_place.created, '
+                'places_place.created_lst_rpt, '
+                'places_place.latitude, '
+                'places_place.longitude, '
+                'ROUND(( 6371 * acos( cos( radians(39.178780) ) * cos( radians( latitude ) ) * '
+                'cos( radians( longitude ) - radians(-86.549950) ) + sin( radians(39.178780) ) '
+                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                'AS distance, '
+                'COUNT(ch.id) as checkin_cnt, '
+                'COUNT(l.id) as like_cnt '
+
+            'FROM places_place '
+            'LEFT JOIN places_checkin ch ON ch.place_id = places_place.id '
+            'LEFT JOIN places_like l ON l.place_id = places_place.id '
+
+            'GROUP BY places_place.id '
+            'ORDER BY places_place.created_lst_rpt DESC, distance ASC '
+
+
+            'LIMIT '+limitFrom+', '+limitCount+''
+        )
+
         serializer = PlaceSerializer(places, many=True)
         return Response(serializer.data)
 

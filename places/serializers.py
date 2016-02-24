@@ -10,7 +10,12 @@ class PlaceSerializer(serializers.Serializer):
     description = serializers.CharField(style={'base_template': 'textarea.html'})
     enable = serializers.BooleanField(required=False)
     created = serializers.DateTimeField()
-
+    created_lst_rpt = serializers.DateTimeField()
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=10, decimal_places=6)
+    distance = serializers.SerializerMethodField()
+    checkin_cnt = serializers.SerializerMethodField()
+    like_cnt = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         """
@@ -29,6 +34,30 @@ class PlaceSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+
+    def get_distance(self, obj):
+        # import ipdb; ipdb.set_trace()
+        try:
+            distance = obj.distance
+        except AttributeError:
+            distance = 0
+        return distance
+
+    def get_checkin_cnt(self, obj):
+        # import ipdb; ipdb.set_trace()
+        try:
+            checkin_cnt = obj.checkin_cnt
+        except AttributeError:
+            checkin_cnt = 0
+        return checkin_cnt
+
+    def get_like_cnt(self, obj):
+        # import ipdb; ipdb.set_trace()
+        try:
+            like_cnt = obj.like_cnt
+        except AttributeError:
+            like_cnt = 0
+        return like_cnt
 
 
 class CheckinSerializer(serializers.ModelSerializer):
