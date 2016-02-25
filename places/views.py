@@ -16,11 +16,18 @@ class SnippetList(APIView):
         # import ipdb; ipdb.set_trace()
         limitFrom = str(request.GET.get('limit_from'))
         limitCount = str(request.GET.get('limit_count'))
+        latitude = str(request.GET.get('latitude'))
+        longitude = str(request.GET.get('longitude'))
 
         if limitFrom == 'None':
             limitFrom = '0'
         if limitCount == 'None':
-            limitCount = '3'
+            limitCount = '100000'
+
+        if latitude == 'None':
+            return Response({'error': ('Invalid or missing perameter latitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
+        if longitude == 'None':
+            return Response({'error': ('Invalid or missing perameter longitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -35,8 +42,8 @@ class SnippetList(APIView):
                 'places_place.created_lst_rpt, '
                 'places_place.latitude, '
                 'places_place.longitude, '
-                'ROUND(( 6371 * acos( cos( radians(39.178780) ) * cos( radians( latitude ) ) * '
-                'cos( radians( longitude ) - radians(-86.549950) ) + sin( radians(39.178780) ) '
+                'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
                 '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
                 'AS distance, '
                 'COUNT(ch.id) as checkin_cnt, '
