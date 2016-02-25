@@ -2,6 +2,8 @@ from django.forms.models import fields_for_model
 from rest_framework import serializers
 from places.models import Place, Checkin, Like
 from django.http import Http404
+from django.conf import settings
+import os
 
 class PlaceSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -13,10 +15,25 @@ class PlaceSerializer(serializers.Serializer):
     created_lst_rpt = serializers.DateTimeField()
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=6)
-    image = serializers.FileField()
+    place_image = serializers.SerializerMethodField()
     distance = serializers.SerializerMethodField()
     checkin_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
+
+
+    def get_place_image(self, obj):
+
+        # import ipdb; ipdb.set_trace()
+
+        if str(obj.image) != '':
+            puth = str(obj.image)
+            res = settings.SITE_DOMAIN
+            res += '/media/'
+            res += puth
+        else:
+            res = None
+
+        return res
 
     def create(self, validated_data):
         """
