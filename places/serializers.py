@@ -13,6 +13,7 @@ class PlaceSerializer(serializers.Serializer):
     created_lst_rpt = serializers.DateTimeField()
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=6)
+    image = serializers.FileField()
     distance = serializers.SerializerMethodField()
     checkin_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()

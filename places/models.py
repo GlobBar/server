@@ -12,6 +12,7 @@ class Place(models.Model):
     enable = models.BooleanField(default=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True)
+    image = models.FileField(upload_to='place/%Y/%m/%d', blank=True, null=True)
 
     class Meta:
         ordering = ('id', )
