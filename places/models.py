@@ -22,6 +22,8 @@ class Checkin(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
+    is_hidden = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ('id', )

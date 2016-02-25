@@ -59,8 +59,14 @@ class SnippetList(APIView):
 
             'LIMIT '+limitFrom+', '+limitCount+''
         )
+        # import ipdb; ipdb.set_trace()
+        my_checin = Checkin.objects.filter(user=request.user).first()
+        if my_checin is None:
+            my_check_in = None
+        else:
+            my_check_in = my_checin.place.pk
 
-        serializer = PlaceSerializer(places, many=True)
+        serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in})
         return Response(serializer.data)
 
     def post(self, request, format=None):
@@ -82,8 +88,14 @@ class SnippetDetail(APIView):
             raise Http404
 
     def get(self, request, pk, format=None):
+        my_checin = Checkin.objects.filter(user=request.user).first()
+        if my_checin is None:
+            my_check_in = None
+        else:
+            my_check_in = my_checin.place.pk
+
         place = self.get_object(pk)
-        serializer = PlaceSerializer(place)
+        serializer = PlaceSerializer(place, context={'my_check_in': my_check_in})
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
@@ -110,10 +122,24 @@ class CheckinList(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = CheckinSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
+
+        checkin = Checkin.objects.filter(user=request.user).first()
+
+        if checkin is None:
+            serializer = CheckinSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            try:
+                place = Place.objects.get(pk=request.POST.get('place_pk'))
+            except Place.DoesNotExist:
+                return Response({'error': ('Invalid place_pk')}, status=status.HTTP_400_BAD_REQUEST)
+            checkin.place = place
+            checkin.save()
+            serializer = CheckinSerializer(checkin)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

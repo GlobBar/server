@@ -3,7 +3,9 @@ from rest_framework import serializers
 from places.models import Place, Checkin, Like
 from django.http import Http404
 from django.conf import settings
-import os
+from django.db.models.functions import Coalesce, Lower
+from apiusers.serializers import LastUsersSerializer
+
 
 class PlaceSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -19,11 +21,23 @@ class PlaceSerializer(serializers.Serializer):
     distance = serializers.SerializerMethodField()
     checkin_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
+    last_users = serializers.SerializerMethodField()
+    my_check_in = serializers.SerializerMethodField()
 
+    def get_my_check_in(self, obj):
+
+        try:
+            my_check_in = self.context['my_check_in']
+        except:
+            my_check_in = None
+
+        if obj.pk == my_check_in:
+            res = True
+        else:
+            res = False
+        return res
 
     def get_place_image(self, obj):
-
-        # import ipdb; ipdb.set_trace()
 
         if str(obj.image) != '':
             puth = str(obj.image)
@@ -34,6 +48,11 @@ class PlaceSerializer(serializers.Serializer):
             res = None
 
         return res
+
+    def get_last_users(self, obj):
+        last_checkins = Checkin.objects.filter(is_hidden=False, place=obj).order_by(Lower('created').desc())[0:10]
+        serializer = LastUsersSerializer(last_checkins, many=True)
+        return serializer.data
 
     def create(self, validated_data):
         """
@@ -54,7 +73,6 @@ class PlaceSerializer(serializers.Serializer):
         return instance
 
     def get_distance(self, obj):
-        # import ipdb; ipdb.set_trace()
         try:
             distance = obj.distance
         except AttributeError:
@@ -62,7 +80,6 @@ class PlaceSerializer(serializers.Serializer):
         return distance
 
     def get_checkin_cnt(self, obj):
-        # import ipdb; ipdb.set_trace()
         try:
             checkin_cnt = obj.checkin_cnt
         except AttributeError:
@@ -70,7 +87,6 @@ class PlaceSerializer(serializers.Serializer):
         return checkin_cnt
 
     def get_like_cnt(self, obj):
-        # import ipdb; ipdb.set_trace()
         try:
             like_cnt = obj.like_cnt
         except AttributeError:
@@ -82,24 +98,7 @@ class CheckinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Checkin
-        fields = ('pk', 'user', )
-
-    def save(self, **kwargs):
-
-        checkin = Checkin.objects.filter(user=self.context['request'].user).first()
-        if checkin is not None:
-            checkin.delete()
-
-        checkin = super(CheckinSerializer, self).save(**kwargs)
-        checkin.user = self.context['request'].user
-
-        try:
-            place = Place.objects.get(pk=self.context['request'].POST.get('place_pk'))
-            checkin.place = place
-        except Place.DoesNotExist:
-            raise Http404
-        checkin.save()
-        return checkin
+        fields = ('pk', 'user', 'place')
 
 
 class LikeSerializer(serializers.ModelSerializer):
