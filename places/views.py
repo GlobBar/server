@@ -112,9 +112,7 @@ class CheckinList(APIView):
     def post(self, request, format=None):
         serializer = CheckinSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-
             serializer.save()
-
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -129,9 +127,18 @@ class LikeList(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = LikeSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        place_id = request.POST.get('place_pk')
+        user_id = request.user.id
+        like = Like.objects.filter(place_id=place_id, user=request.user).first()
+        # Create just one like for user in this place
+        if like is None:
+            serializer = LikeSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'pk':str(like.pk), 'place':str(place_id), 'user':str(user_id)}, status=status.HTTP_201_CREATED)
+
+
 
