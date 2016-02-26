@@ -27,6 +27,10 @@ class PlaceSerializer(serializers.Serializer):
     city = serializers.SerializerMethodField()
 
 
+    def get_all_city(self, obj):
+        return None
+
+
     def get_city(self, obj):
 
         if obj.city is not None:
@@ -34,6 +38,7 @@ class PlaceSerializer(serializers.Serializer):
         else:
             city = None
         return city
+
 
     def get_my_check_in(self, obj):
 

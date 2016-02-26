@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 from city.models import City
+from city.serializers import CitySerializer
 from django.db import connection
 
 
@@ -95,7 +96,14 @@ class SnippetList(APIView):
             my_check_in = my_checin.place.pk
 
         serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in})
-        return Response(serializer.data)
+
+        cities = City.objects.filter(enable=1)
+        city_serializer = CitySerializer(cities, many=True)
+        data = {'places': serializer.data, 'cities': city_serializer.data}
+        # import ipdb; ipdb.set_trace()
+
+
+        return Response(data)
 
     def post(self, request, format=None):
         serializer = PlaceSerializer(data=request.data)
