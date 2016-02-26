@@ -30,10 +30,10 @@ class PlaceSerializer(serializers.Serializer):
     def get_city(self, obj):
 
         if obj.city is not None:
-            city = obj.city
+            city = obj.city.title
         else:
             city = None
-        return city.title
+        return city
 
     def get_my_check_in(self, obj):
 
