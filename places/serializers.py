@@ -5,6 +5,7 @@ from django.http import Http404
 from django.conf import settings
 from django.db.models.functions import Coalesce, Lower
 from apiusers.serializers import LastUsersSerializer
+from city.models import City
 
 
 class PlaceSerializer(serializers.Serializer):
@@ -23,6 +24,16 @@ class PlaceSerializer(serializers.Serializer):
     like_cnt = serializers.SerializerMethodField()
     last_users = serializers.SerializerMethodField()
     my_check_in = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+
+
+    def get_city(self, obj):
+
+        if obj.city is not None:
+            city = obj.city
+        else:
+            city = None
+        return city.title
 
     def get_my_check_in(self, obj):
 

@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from city.models import City
+from django.db import connection
 
 
 class SnippetList(APIView):
@@ -29,6 +31,31 @@ class SnippetList(APIView):
         if longitude == 'None':
             return Response({'error': ('Invalid or missing perameter longitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
 
+        # cursor = connection.cursor()
+        my_city = City.objects.raw(
+            'SELECT '
+                'city_city.id, '
+                'city_city.enable, '
+                'city_city.latitude, '
+                'city_city.longitude, '
+                'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                'AS distance '
+            'FROM city_city '
+            'WHERE city_city.enable = 1 '
+            'ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                '  ASC '
+            'LIMIT 0, 1'
+        )
+        try:
+            my_city_pk = ' WHERE places_place.city_id = '+str(my_city[0].pk)
+        except IndexError:
+            my_city_pk = ''
+
+        # import ipdb; ipdb.set_trace()
 
 
         places = Place.objects.raw(
@@ -53,6 +80,7 @@ class SnippetList(APIView):
             'LEFT JOIN places_checkin ch ON ch.place_id = places_place.id '
             'LEFT JOIN places_like l ON l.place_id = places_place.id '
 
+            ' '+my_city_pk+' '
             'GROUP BY places_place.id '
             'ORDER BY places_place.created_lst_rpt DESC, distance ASC '
 
@@ -134,7 +162,7 @@ class CheckinList(APIView):
             try:
                 place = Place.objects.get(pk=request.POST.get('place_pk'))
             except Place.DoesNotExist:
-                return Response({'error': ('Invalid place_pk')}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid place_pk'}, status=status.HTTP_400_BAD_REQUEST)
             checkin.place = place
             # import ipdb; ipdb.set_trace()
             if 'is_hidden' in request.POST:
@@ -171,7 +199,7 @@ class LikeList(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'pk':str(like.pk), 'place':str(place_id), 'user':str(user_id)}, status=status.HTTP_201_CREATED)
+            return Response({'pk': str(like.pk), 'place': str(place_id), 'user': str(user_id)}, status=status.HTTP_201_CREATED)
 
 
 

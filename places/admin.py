@@ -7,13 +7,14 @@ from places.models import Place
 #     extra = 3
 
 class PlaceAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title')
+    list_display = ('pk', 'title', 'city')
     list_filter = ['title']
 
     fieldsets = [
         (None,               {
             'fields': [
                 'title',
+                'city',
                 'address',
                 'description',
                 'enable',

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
+from city.models import City
 
 
 class Place(models.Model):
@@ -13,6 +14,7 @@ class Place(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True)
     image = models.FileField(upload_to='place/%Y/%m/%d', blank=True, null=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ('id', )
