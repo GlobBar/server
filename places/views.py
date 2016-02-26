@@ -136,6 +136,13 @@ class CheckinList(APIView):
             except Place.DoesNotExist:
                 return Response({'error': ('Invalid place_pk')}, status=status.HTTP_400_BAD_REQUEST)
             checkin.place = place
+            # import ipdb; ipdb.set_trace()
+            if 'is_hidden' in request.POST:
+                if str(request.POST.get('is_hidden')) == 'true':
+                    checkin.is_hidden = True
+                else:
+                    checkin.is_hidden = False
+
             checkin.save()
             serializer = CheckinSerializer(checkin)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
