@@ -8,6 +8,9 @@ class Place(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     created_lst_rpt = models.DateTimeField(blank=True, null=True)
     title = models.CharField(max_length=100, blank=True, default='')
+    opening_hours = models.CharField(max_length=100, blank=True, default='')
+    music_type = models.CharField(max_length=100, blank=True, default='')
+    age_group = models.CharField(max_length=100, blank=True, default='')
     address = models.CharField(max_length=250, blank=True, default='')
     description = models.TextField()
     enable = models.BooleanField(default=True)
@@ -38,3 +41,5 @@ class Like(models.Model):
 
     class Meta:
         ordering = ('id', )
+
+

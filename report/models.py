@@ -20,3 +20,11 @@ class Report(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
     report_image = models.ForeignKey(ReportImage, on_delete=models.CASCADE, null=True, blank=True)
 
+
+class ReportImageLike(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering = ('id', )

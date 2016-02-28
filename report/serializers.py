@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from report.models import Report
+from report.models import Report, ReportImageLike
 from django.conf import settings
 
 
@@ -9,26 +9,33 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_report_image(self, obj):
 
-        # import ipdb; ipdb.set_trace()
-
         if obj.report_image is not None:
-            puth = str(obj.report_image.image)
+            try:
+                puth = str(obj.report_image.image)
+            except:
+                puth = obj.image_from_query
             res = settings.SITE_DOMAIN
             res += '/media/'
             res += puth
         else:
             res = None
-
         return res
 
 
     class Meta:
         model = Report
         fields = ('pk', 'description', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'place', 'type', 'report_image')
+                  'charge', 'queue', 'type', 'report_image')
 
     def save(self, **kwargs):
         report = super(ReportSerializer, self).save(**kwargs)
         report.user = self.context['request'].user
 
         return report.save()
+
+
+class ReportImageLikeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ReportImageLike
+        fields = ('pk', 'user', 'report')

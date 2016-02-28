@@ -1,5 +1,5 @@
 from places.models import Place, Checkin, Like
-from places.serializers import PlaceSerializer, CheckinSerializer, LikeSerializer
+from places.serializers import PlaceSerializer, CheckinSerializer, LikeSerializer, PlaceDetailSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,6 +8,7 @@ from rest_framework import permissions
 from city.models import City
 from city.serializers import CitySerializer
 from django.db import connection
+from report.serializers import ReportSerializer
 
 
 class SnippetList(APIView):
@@ -15,12 +16,14 @@ class SnippetList(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-        # places = Place.objects.all()
-        # import ipdb; ipdb.set_trace()
+
         limitFrom = str(request.GET.get('limit_from'))
         limitCount = str(request.GET.get('limit_count'))
+
         latitude = str(request.GET.get('latitude'))
         longitude = str(request.GET.get('longitude'))
+
+        filter_city = str(request.GET.get('filter_city'))
 
         if limitFrom == 'None':
             limitFrom = '0'
@@ -32,31 +35,32 @@ class SnippetList(APIView):
         if longitude == 'None':
             return Response({'error': ('Invalid or missing perameter longitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
 
-        # cursor = connection.cursor()
-        my_city = City.objects.raw(
-            'SELECT '
-                'city_city.id, '
-                'city_city.enable, '
-                'city_city.latitude, '
-                'city_city.longitude, '
-                'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
-                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
-                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
-                'AS distance '
-            'FROM city_city '
-            'WHERE city_city.enable = 1 '
-            'ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
-                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
-                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
-                '  ASC '
-            'LIMIT 0, 1'
-        )
-        try:
-            my_city_pk = ' WHERE places_place.city_id = '+str(my_city[0].pk)
-        except IndexError:
-            my_city_pk = ''
 
-        # import ipdb; ipdb.set_trace()
+        if filter_city == 'None':
+            my_city_pk = False
+        else:
+            try:
+                my_city_pk = ' WHERE places_place.city_id = '+str(City.objects.get(pk=filter_city).pk)
+            except:
+                my_city_pk = False
+
+
+        if my_city_pk is False:
+            my_city = City.objects.raw(
+                'SELECT '
+                    'city_city.id '
+                'FROM city_city '
+                'WHERE city_city.enable = 1 '
+                'ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                    'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                    '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                    '  ASC '
+                'LIMIT 0, 1'
+            )
+            try:
+                my_city_pk = ' WHERE places_place.city_id = '+str(my_city[0].pk)
+            except IndexError:
+                my_city_pk = ''
 
 
         places = Place.objects.raw(
@@ -88,7 +92,6 @@ class SnippetList(APIView):
 
             'LIMIT '+limitFrom+', '+limitCount+''
         )
-        # import ipdb; ipdb.set_trace()
         my_checin = Checkin.objects.filter(user=request.user).first()
         if my_checin is None:
             my_check_in = None
@@ -100,8 +103,6 @@ class SnippetList(APIView):
         cities = City.objects.filter(enable=1)
         city_serializer = CitySerializer(cities, many=True)
         data = {'places': serializer.data, 'cities': city_serializer.data}
-        # import ipdb; ipdb.set_trace()
-
 
         return Response(data)
 
@@ -129,10 +130,38 @@ class SnippetDetail(APIView):
             my_check_in = None
         else:
             my_check_in = my_checin.place.pk
+        # import ipdb;ipdb.set_trace()
+
+        hot_reports = Place.objects.raw(
+            'SELECT '
+                'report_report.id , '
+                'report_report.description , '
+                'report_report.place_id AS place, '
+                'report_report.user_id AS user, '
+                'report_report.report_image_id AS report_image, '
+                'report_report.is_going , '
+                'report_report.bar_filling , '
+                'report_report.music_type , '
+                'report_report.gender_relation , '
+                'report_report.charge , '
+                'report_report.queue , '
+                'report_report.type , '
+                'ri.image AS image_from_query, '
+                'COUNT(l.id) as like_cnt '
+            'FROM report_report '
+            'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+            'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+            'WHERE report_report.place_id = '+pk+' AND report_report.enable = 1 '
+            'GROUP BY report_report.id '
+            'ORDER BY like_cnt DESC '
+            'LIMIT 0,3'
+        )
+        # import ipdb;ipdb.set_trace()
+        serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
 
         place = self.get_object(pk)
-        serializer = PlaceSerializer(place, context={'my_check_in': my_check_in})
-        return Response(serializer.data)
+        serializer_place = PlaceDetailSerializer(place, context={'my_check_in': my_check_in})
+        return Response({'place': serializer_place.data, 'reports': serializer_hgot_reports.data})
 
     def put(self, request, pk, format=None):
         place = self.get_object(pk)
