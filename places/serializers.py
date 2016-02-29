@@ -176,14 +176,14 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ('pk', 'place', 'user',)
 
-    def save(self, **kwargs):
-        like = super(LikeSerializer, self).save(**kwargs)
-        like.user = self.context['request'].user
-        try:
-            place = Place.objects.get(pk=self.context['request'].POST.get('place_pk'))
-            like.place = place
-        except Place.DoesNotExist:
-            raise Http404
-
-        return like.save()
+    # def save(self, **kwargs):
+    #     like = super(LikeSerializer, self).save(**kwargs)
+    #     like.user = self.context['request'].user
+    #     try:
+    #         place = Place.objects.get(pk=self.context['request'].POST.get('place_pk'))
+    #         like.place = place
+    #     except Place.DoesNotExist:
+    #         raise Http404
+    #
+        # return like.save()
 

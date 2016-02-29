@@ -29,7 +29,6 @@ class Checkin(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
     is_hidden = models.BooleanField(default=False)
 
-
     class Meta:
         ordering = ('id', )
 

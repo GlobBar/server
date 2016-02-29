@@ -1,3 +1,4 @@
+
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -74,12 +75,12 @@ class ReportFileUploadView(APIView):
         self.id = report_image.id
 
         report = Report(
-            is_going=True,
-            bar_filling=0,
-            music_type=0,
-            gender_relation=0,
-            charge=0,
-            queue=0,
+            # is_going=True,
+            # bar_filling=0,
+            # music_type=0,
+            # gender_relation=0,
+            # charge=0,
+            # queue=0,
             type=1,  # (0 - report, 1 - picture)
             user=user,
             place=place,

@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework import permissions
 from city.models import City
 from city.serializers import CitySerializer
-from django.db import connection
 from report.serializers import ReportSerializer
 
 
@@ -35,7 +34,6 @@ class SnippetList(APIView):
         if longitude == 'None':
             return Response({'error': ('Invalid or missing perameter longitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
 
-
         if filter_city == 'None':
             my_city_pk = False
         else:
@@ -44,7 +42,7 @@ class SnippetList(APIView):
             except:
                 my_city_pk = False
 
-
+        # if city pk does not pass from client - find most nearest cities pk
         if my_city_pk is False:
             my_city = City.objects.raw(
                 'SELECT '
@@ -191,11 +189,7 @@ class CheckinList(APIView):
         checkin = Checkin.objects.filter(user=request.user).first()
 
         if checkin is None:
-
-
-
-
-            request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk') })
+            request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk')})
             serializer = CheckinSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
@@ -235,6 +229,7 @@ class LikeList(APIView):
         like = Like.objects.filter(place_id=place_id, user=request.user).first()
         # Create just one like for user in this place
         if like is None:
+            request.data.update({'user': user_id, 'place': place_id})
             serializer = LikeSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()

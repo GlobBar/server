@@ -7,14 +7,14 @@ from django.contrib.auth.models import User
 
 class Report(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     enable = models.BooleanField(default=True)
-    is_going = models.BooleanField()
-    bar_filling = models.IntegerField()
-    music_type = models.IntegerField()
-    gender_relation = models.IntegerField()
-    charge = models.IntegerField()
-    queue = models.IntegerField()
+    is_going = models.NullBooleanField(null=True, blank=True)
+    bar_filling = models.IntegerField(null=True, blank=True)
+    music_type = models.IntegerField(null=True, blank=True)
+    gender_relation = models.IntegerField(null=True, blank=True)
+    charge = models.IntegerField(null=True, blank=True)
+    queue = models.IntegerField(null=True, blank=True)
     type = models.IntegerField(default=0)  # 0 - report, 1 - picture
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
