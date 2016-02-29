@@ -191,6 +191,11 @@ class CheckinList(APIView):
         checkin = Checkin.objects.filter(user=request.user).first()
 
         if checkin is None:
+
+
+
+
+            request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk') })
             serializer = CheckinSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
