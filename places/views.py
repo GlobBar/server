@@ -186,7 +186,7 @@ class SnippetDetail(APIView):
                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
                 'GROUP BY report_report.id '
-                'ORDER BY like_cnt DESC '
+                'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (pk,  frt)
             )
@@ -229,7 +229,7 @@ class SnippetDetail(APIView):
                  'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
                  'AND report_report.id NOT IN '+str_pk+' '
                  'GROUP BY report_report.id '
-                 'ORDER BY report_report.created  ASC '
+                 'ORDER BY report_report.created  DESC '
                  'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
                  , (pk, frt)
             )
@@ -261,7 +261,7 @@ class SnippetDetail(APIView):
                 'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
                 'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
                 'GROUP BY report_report.id '
-                'ORDER BY like_cnt DESC '
+                'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (pk, frt, frt)
             )
@@ -302,7 +302,7 @@ class SnippetDetail(APIView):
                  'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
                  'AND report_report.id NOT IN '+str_pk+' '
                  'GROUP BY report_report.id '
-                 'ORDER BY report_report.created  ASC '
+                 'ORDER BY report_report.created  DESC '
                  'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
                  , (pk, frt, frt)
             )
@@ -333,7 +333,7 @@ class SnippetDetail(APIView):
                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
                 'GROUP BY report_report.id '
-                'ORDER BY like_cnt DESC '
+                'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (pk, frt)
             )
@@ -373,7 +373,7 @@ class SnippetDetail(APIView):
                  'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
                  'AND report_report.id NOT IN '+str_pk+' '
                  'GROUP BY report_report.id '
-                 'ORDER BY report_report.created  ASC '
+                 'ORDER BY report_report.created  DESC '
                  'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
                  , (pk, frt)
             )
