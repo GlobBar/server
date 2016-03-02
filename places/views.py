@@ -130,6 +130,11 @@ class SnippetDetail(APIView):
         limit_from = str(request.GET.get('limit_from'))
         limit_count = str(request.GET.get('limit_count'))
 
+        if limit_from == 'None':
+            limit_from = '0'
+        if limit_count == 'None':
+            limit_count = '9'
+
         my_checin = Checkin.objects.filter(user=request.user).first()
         if my_checin is None:
             my_check_in = None
