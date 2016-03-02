@@ -12,6 +12,7 @@ class CityAdmin(admin.ModelAdmin):
                 'title',
                 'address',
                 'enable',
+                'time_zone',
                 'latitude',
                 'longitude',
             ]})

@@ -9,6 +9,10 @@ from city.models import City
 from city.serializers import CitySerializer
 from report.serializers import ReportSerializer
 
+from datetime import datetime
+from pytz import timezone
+import pytz
+
 
 class SnippetList(APIView):
 
@@ -123,6 +127,9 @@ class SnippetDetail(APIView):
             raise Http404
 
     def get(self, request, pk, format=None):
+        limit_from = str(request.GET.get('limit_from'))
+        limit_count = str(request.GET.get('limit_count'))
+
         my_checin = Checkin.objects.filter(user=request.user).first()
         if my_checin is None:
             my_check_in = None
@@ -130,36 +137,259 @@ class SnippetDetail(APIView):
             my_check_in = my_checin.place.pk
         # import ipdb;ipdb.set_trace()
 
-        hot_reports = Place.objects.raw(
-            'SELECT '
-                'report_report.id , '
-                'report_report.description , '
-                'report_report.place_id AS place, '
-                'report_report.user_id AS user, '
-                'report_report.report_image_id AS report_image, '
-                'report_report.is_going , '
-                'report_report.bar_filling , '
-                'report_report.music_type , '
-                'report_report.gender_relation , '
-                'report_report.charge , '
-                'report_report.queue , '
-                'report_report.type , '
-                'ri.image AS image_from_query, '
-                'COUNT(l.id) as like_cnt '
-            'FROM report_report '
-            'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-            'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-            'WHERE report_report.place_id = '+pk+' AND report_report.enable = 1 '
-            'GROUP BY report_report.id '
-            'ORDER BY like_cnt DESC '
-            'LIMIT 0,3'
-        )
+        try:
+            place = Place.objects.get(pk=pk)
+            zone_title = place.city.time_zone
+        except:
+            zone_title = 'America/Indiana/Indianapolis'
+
+        tz_delta_dirty = datetime.now(pytz.timezone(zone_title)).strftime('%z')
+        if len(tz_delta_dirty) == 5:
+            start = tz_delta_dirty
+            finish = tz_delta_dirty
+            tz_delta = start[0:3]+':'+finish[3:]
+        else:
+            tz_delta = '+00:00'
+
+        frt = '%Y-%m-%d 06:00:00'
+
+
+
+        # MONTH
+        # Hot
+        if str(request.GET.get('period_filter')) == 'month':
+            hot_reports = Place.objects.raw(
+                'SELECT '
+                    'report_report.id , '
+                    'report_report.created , '
+                    'report_report.description , '
+                    'report_report.place_id AS place, '
+                    'report_report.user_id AS user, '
+                    'report_report.report_image_id AS report_image, '
+                    'report_report.is_going , '
+                    'report_report.bar_filling , '
+                    'report_report.music_type , '
+                    'report_report.gender_relation , '
+                    'report_report.charge , '
+                    'report_report.queue , '
+                    'report_report.type , '
+                    'ri.image AS image_from_query, '
+                    'COUNT(l.id) as like_cnt '
+                'FROM report_report '
+                'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+                'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+                'WHERE report_report.place_id = %s AND report_report.enable = 1 '
+                'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
+                'GROUP BY report_report.id '
+                'ORDER BY like_cnt DESC '
+                'LIMIT 0,3'
+                , (pk,  frt)
+            )
+
+            serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+
+            # Remove duplicates
+            hot_data = self.getHotData(serializer_hgot_reports)
+            str_pk = hot_data['str_pk']
+
+            # Correction limits
+            hot_count = hot_data['hot_count']
+            correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
+            correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
+
+
+             # Simple
+
+            simple_reports = Place.objects.raw(
+                 'SELECT '
+                    'report_report.id , '
+                    'report_report.description , '
+                    'report_report.place_id AS place, '
+                    'report_report.user_id AS user, '
+                    'report_report.report_image_id AS report_image, '
+                    'report_report.is_going , '
+                    'report_report.bar_filling , '
+                    'report_report.music_type , '
+                    'report_report.gender_relation , '
+                    'report_report.charge , '
+                    'report_report.queue , '
+                    'report_report.type , '
+                    'report_report.created , '
+                    'ri.image AS image_from_query, '
+                    'COUNT(l.id) as like_cnt '
+                 'FROM report_report '
+                 'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+                 'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
+                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
+                 'AND report_report.id NOT IN '+str_pk+' '
+                 'GROUP BY report_report.id '
+                 'ORDER BY report_report.created  ASC '
+                 'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
+                 , (pk, frt)
+            )
+
+
+        elif str(request.GET.get('period_filter')) == 'week':
+            # WEEK
+            hot_reports = Place.objects.raw(
+                'SELECT '
+                    'report_report.id , '
+                    'report_report.created , '
+                    'report_report.description , '
+                    'report_report.place_id AS place, '
+                    'report_report.user_id AS user, '
+                    'report_report.report_image_id AS report_image, '
+                    'report_report.is_going , '
+                    'report_report.bar_filling , '
+                    'report_report.music_type , '
+                    'report_report.gender_relation , '
+                    'report_report.charge , '
+                    'report_report.queue , '
+                    'report_report.type , '
+                    'ri.image AS image_from_query, '
+                    'COUNT(l.id) as like_cnt '
+                'FROM report_report '
+                'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+                'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+                'WHERE report_report.place_id = %s AND report_report.enable = 1 '
+                'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
+                'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
+                'GROUP BY report_report.id '
+                'ORDER BY like_cnt DESC '
+                'LIMIT 0,3'
+                , (pk, frt, frt)
+            )
+
+            serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+
+            # Remove duplicates
+            hot_data = self.getHotData(serializer_hgot_reports)
+            str_pk = hot_data['str_pk']
+
+            # Correction limits
+            hot_count = hot_data['hot_count']
+            correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
+            correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
+
+            simple_reports = Place.objects.raw(
+                 'SELECT '
+                    'report_report.id , '
+                    'report_report.description , '
+                    'report_report.place_id AS place, '
+                    'report_report.user_id AS user, '
+                    'report_report.report_image_id AS report_image, '
+                    'report_report.is_going , '
+                    'report_report.bar_filling , '
+                    'report_report.music_type , '
+                    'report_report.gender_relation , '
+                    'report_report.charge , '
+                    'report_report.queue , '
+                    'report_report.type , '
+                    'report_report.created , '
+                    'ri.image AS image_from_query, '
+                    'COUNT(l.id) as like_cnt '
+                 'FROM report_report '
+                 'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+                 'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
+                 'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
+                 'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
+                 'AND report_report.id NOT IN '+str_pk+' '
+                 'GROUP BY report_report.id '
+                 'ORDER BY report_report.created  ASC '
+                 'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
+                 , (pk, frt, frt)
+            )
+
+
+        else:
+                # TODAY
+            hot_reports = Place.objects.raw(
+                'SELECT '
+                    'report_report.id , '
+                    'report_report.created , '
+                    'report_report.description , '
+                    'report_report.place_id AS place, '
+                    'report_report.user_id AS user, '
+                    'report_report.report_image_id AS report_image, '
+                    'report_report.is_going , '
+                    'report_report.bar_filling , '
+                    'report_report.music_type , '
+                    'report_report.gender_relation , '
+                    'report_report.charge , '
+                    'report_report.queue , '
+                    'report_report.type , '
+                    'ri.image AS image_from_query, '
+                    'COUNT(l.id) as like_cnt '
+                'FROM report_report '
+                'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+                'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+                'WHERE report_report.place_id = %s AND report_report.enable = 1 '
+                'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
+                'GROUP BY report_report.id '
+                'ORDER BY like_cnt DESC '
+                'LIMIT 0,3'
+                , (pk, frt)
+            )
+
+            serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+
+            # Remove duplicates
+            hot_data = self.getHotData(serializer_hgot_reports)
+            str_pk = hot_data['str_pk']
+
+            # Correction limits
+            hot_count = hot_data['hot_count']
+            correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
+            correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
+
+            simple_reports = Place.objects.raw(
+                 'SELECT '
+                    'report_report.id , '
+                    'report_report.description , '
+                    'report_report.place_id AS place, '
+                    'report_report.user_id AS user, '
+                    'report_report.report_image_id AS report_image, '
+                    'report_report.is_going , '
+                    'report_report.bar_filling , '
+                    'report_report.music_type , '
+                    'report_report.gender_relation , '
+                    'report_report.charge , '
+                    'report_report.queue , '
+                    'report_report.type , '
+                    'report_report.created , '
+                    'ri.image AS image_from_query, '
+                    'COUNT(l.id) as like_cnt '
+                 'FROM report_report '
+                 'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
+                 'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
+                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
+                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
+                 'AND report_report.id NOT IN '+str_pk+' '
+                 'GROUP BY report_report.id '
+                 'ORDER BY report_report.created  ASC '
+                 'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
+                 , (pk, frt)
+            )
+
+        # IF limit_from > hot_count => Hot_places does not view
+        if (correct_limit_from + hot_count) > hot_count:
+            hot_reports_result = []
+        else:
+            hot_reports_result = serializer_hgot_reports.data
         # import ipdb;ipdb.set_trace()
-        serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+        serializer_simple_reports = ReportSerializer(simple_reports, many=True)
 
         place = self.get_object(pk)
         serializer_place = PlaceDetailSerializer(place, context={'my_check_in': my_check_in})
-        return Response({'place': serializer_place.data, 'reports': serializer_hgot_reports.data})
+
+
+        return Response({
+            'place': serializer_place.data
+            , 'reports': hot_reports_result + serializer_simple_reports.data
+            , 'field_for_testing(simple_pl)': serializer_simple_reports.data
+                         })
 
     def put(self, request, pk, format=None):
         place = self.get_object(pk)
@@ -173,6 +403,46 @@ class SnippetDetail(APIView):
         place = self.get_object(pk)
         place.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def correctionLimitFrom(self, limit_from, hot_count):
+        if limit_from == 'None' or limit_from == '0':
+            limit_from = int(hot_count)
+        elif int(limit_from) <= hot_count:
+            # raise Response({'error': 'Invalid parameter limit_from. It mast be > 3'}, status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
+        else:
+            limit_from = int(limit_from)
+
+        correct_limit_from = limit_from - hot_count
+
+        return correct_limit_from
+
+    def correctionLimitCount(self, limit_from, limit_count, hot_count):
+        if limit_count == 'None':
+            limit_count = 9
+        else:
+            limit_count = int(limit_count)
+
+        if int(limit_from) > 3:
+            # If not first page -> do not minus hot_count
+            correct_limit_count = limit_count
+        else:
+            # If first page -> minus hot_count
+            correct_limit_count = limit_count - hot_count
+
+        return correct_limit_count
+
+    def getHotData(self, serializer_hgot_reports):
+        str_ = ',0'
+        hot_count = 0
+        for i in serializer_hgot_reports.data:
+            hot_count +=1
+            str_ = str_+','+str(i.get('pk'))
+
+        str_pk = '('+str_[1:]+')'
+
+        return {'hot_count': hot_count, 'str_pk': str_pk}
+
 
 
 class CheckinList(APIView):
