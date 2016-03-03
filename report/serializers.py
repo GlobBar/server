@@ -1,11 +1,15 @@
 from rest_framework import serializers
 from report.models import Report, ReportImageLike
 from django.conf import settings
+from django.contrib.auth.models import User
+from apiusers.serializers import OwnerSerializer
 
 
 class ReportSerializer(serializers.ModelSerializer):
 
     report_image = serializers.SerializerMethodField()
+    owner = serializers.SerializerMethodField()
+
 
 
     def to_representation(self, instance):
@@ -15,6 +19,12 @@ class ReportSerializer(serializers.ModelSerializer):
                 del report[i]
         return report
 
+    def get_owner(self, obj):
+        # import ipdb;ipdb.set_trace()
+
+        user = User.objects.get(pk=obj.user)
+        serializer = OwnerSerializer(user)
+        return serializer.data
 
     def get_report_image(self, obj):
 
@@ -34,7 +44,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image')
+                  'charge', 'queue', 'type', 'report_image', 'owner')
 
     def save(self, **kwargs):
         report = super(ReportSerializer, self).save(**kwargs)

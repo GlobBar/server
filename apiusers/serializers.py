@@ -57,14 +57,46 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         model = Group
         fields = ('url', 'name')
 
+class OwnerSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+
+    def get_profile_image(self, obj):
+        try:
+            puth = str(obj.image)
+            is_absolut_puth = puth.find('http')
+
+            if is_absolut_puth == -1:
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/'
+                my_file += puth
+            else:
+                my_file = puth
+
+        except :
+            anonim = settings.MEDIA_ROOT
+            anonim += '/anonim.jpg'
+            if os.path.isfile(anonim):
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/anonim.jpg'
+            else:
+                my_file = None
+
+        return my_file
+
+    class Meta:
+        model = User
+        fields = ('pk', 'username', 'profile_image')
+
 
 class LastUsersSerializer(serializers.Serializer):
     pk = serializers.SerializerMethodField()
     profile_image = serializers.SerializerMethodField()
     last_chk_in_created = serializers.SerializerMethodField()
+    # user_name = serializers.SerializerMethodField()
 
     def get_pk(self, obj):
         return obj.user.pk
+
 
     def get_last_chk_in_created(self, obj):
         return obj.created

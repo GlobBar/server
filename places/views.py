@@ -8,9 +8,7 @@ from rest_framework import permissions
 from city.models import City
 from city.serializers import CitySerializer
 from report.serializers import ReportSerializer
-
 from datetime import datetime
-from pytz import timezone
 import pytz
 
 
