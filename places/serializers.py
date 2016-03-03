@@ -1,11 +1,8 @@
-from django.forms.models import fields_for_model
 from rest_framework import serializers
 from places.models import Place, Checkin, Like
-from django.http import Http404
 from django.conf import settings
-from django.db.models.functions import Coalesce, Lower
+from django.db.models.functions import Lower
 from apiusers.serializers import LastUsersSerializer
-from city.models import City
 
 
 class PlaceDetailSerializer(serializers.Serializer):
@@ -143,7 +140,7 @@ class PlaceSerializer(serializers.Serializer):
             res = None
 
         return res
-    
+
     def get_last_users(self, obj):
         last_checkins = Checkin.objects.filter(is_hidden=False, place=obj).order_by(Lower('created').desc())[0:10]
         serializer = LastUsersSerializer(last_checkins, many=True)

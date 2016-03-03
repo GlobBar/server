@@ -1,5 +1,6 @@
 from places.models import Place, Checkin, Like
 from places.serializers import PlaceSerializer, CheckinSerializer, LikeSerializer, PlaceDetailSerializer
+from places.place_repository import PlaceRepository
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -138,7 +139,6 @@ class SnippetDetail(APIView):
             my_check_in = None
         else:
             my_check_in = my_checin.place.pk
-        # import ipdb;ipdb.set_trace()
 
         try:
             place = Place.objects.get(pk=pk)
@@ -146,6 +146,7 @@ class SnippetDetail(APIView):
         except:
             zone_title = 'America/Indiana/Indianapolis'
 
+        # TimeZone hours delta
         tz_delta_dirty = datetime.now(pytz.timezone(zone_title)).strftime('%z')
         if len(tz_delta_dirty) == 5:
             start = tz_delta_dirty
@@ -156,43 +157,17 @@ class SnippetDetail(APIView):
 
         frt = '%Y-%m-%d 06:00:00'
 
-
+        placeRepoinst = PlaceRepository()
 
         # MONTH
-        # Hot
         if str(request.GET.get('period_filter')) == 'month':
-            hot_reports = Place.objects.raw(
-                'SELECT '
-                    'report_report.id , '
-                    'report_report.created , '
-                    'report_report.description , '
-                    'report_report.place_id AS place, '
-                    'report_report.user_id AS user, '
-                    'report_report.report_image_id AS report_image, '
-                    'report_report.is_going , '
-                    'report_report.bar_filling , '
-                    'report_report.music_type , '
-                    'report_report.gender_relation , '
-                    'report_report.charge , '
-                    'report_report.queue , '
-                    'report_report.type , '
-                    'ri.image AS image_from_query, '
-                    'COUNT(l.id) as like_cnt '
-                'FROM report_report '
-                'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-                'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-                'WHERE report_report.place_id = %s AND report_report.enable = 1 '
-                'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
-                'GROUP BY report_report.id '
-                'ORDER BY like_cnt DESC , report_report.created  DESC '
-                'LIMIT 0,3'
-                , (pk,  frt)
-            )
-
-            serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+            # Hot reports
+            parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
+            hot_reports = PlaceRepository.getMonthReportsHot(placeRepoinst, parameters)
+            serializer_hot_reports = ReportSerializer(hot_reports, many=True)
 
             # Remove duplicates
-            hot_data = self.getHotData(serializer_hgot_reports)
+            hot_data = self.getHotData(serializer_hot_reports)
             str_pk = hot_data['str_pk']
 
             # Correction limits
@@ -200,74 +175,19 @@ class SnippetDetail(APIView):
             correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
             correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
 
+            # Simple reports
+            parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'pk': pk, 'frt': frt}
+            simple_reports = PlaceRepository.getMonthReports(placeRepoinst, parameters)
 
-             # Simple
-
-            simple_reports = Place.objects.raw(
-                 'SELECT '
-                    'report_report.id , '
-                    'report_report.description , '
-                    'report_report.place_id AS place, '
-                    'report_report.user_id AS user, '
-                    'report_report.report_image_id AS report_image, '
-                    'report_report.is_going , '
-                    'report_report.bar_filling , '
-                    'report_report.music_type , '
-                    'report_report.gender_relation , '
-                    'report_report.charge , '
-                    'report_report.queue , '
-                    'report_report.type , '
-                    'report_report.created , '
-                    'ri.image AS image_from_query, '
-                    'COUNT(l.id) as like_cnt '
-                 'FROM report_report '
-                 'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-                 'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
-                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
-                 'AND report_report.id NOT IN '+str_pk+' '
-                 'GROUP BY report_report.id '
-                 'ORDER BY report_report.created  DESC '
-                 'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
-                 , (pk, frt)
-            )
-
-
+        # WEEK
         elif str(request.GET.get('period_filter')) == 'week':
-            # WEEK
-            hot_reports = Place.objects.raw(
-                'SELECT '
-                    'report_report.id , '
-                    'report_report.created , '
-                    'report_report.description , '
-                    'report_report.place_id AS place, '
-                    'report_report.user_id AS user, '
-                    'report_report.report_image_id AS report_image, '
-                    'report_report.is_going , '
-                    'report_report.bar_filling , '
-                    'report_report.music_type , '
-                    'report_report.gender_relation , '
-                    'report_report.charge , '
-                    'report_report.queue , '
-                    'report_report.type , '
-                    'ri.image AS image_from_query, '
-                    'COUNT(l.id) as like_cnt '
-                'FROM report_report '
-                'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-                'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-                'WHERE report_report.place_id = %s AND report_report.enable = 1 '
-                'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
-                'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
-                'GROUP BY report_report.id '
-                'ORDER BY like_cnt DESC , report_report.created  DESC '
-                'LIMIT 0,3'
-                , (pk, frt, frt)
-            )
-
-            serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+            # Hot reports
+            parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
+            hot_reports = PlaceRepository.getWeekReportsHot(placeRepoinst, parameters)
+            serializer_hot_reports = ReportSerializer(hot_reports, many=True)
 
             # Remove duplicates
-            hot_data = self.getHotData(serializer_hgot_reports)
+            hot_data = self.getHotData(serializer_hot_reports)
             str_pk = hot_data['str_pk']
 
             # Correction limits
@@ -275,71 +195,19 @@ class SnippetDetail(APIView):
             correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
             correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
 
-            simple_reports = Place.objects.raw(
-                 'SELECT '
-                    'report_report.id , '
-                    'report_report.description , '
-                    'report_report.place_id AS place, '
-                    'report_report.user_id AS user, '
-                    'report_report.report_image_id AS report_image, '
-                    'report_report.is_going , '
-                    'report_report.bar_filling , '
-                    'report_report.music_type , '
-                    'report_report.gender_relation , '
-                    'report_report.charge , '
-                    'report_report.queue , '
-                    'report_report.type , '
-                    'report_report.created , '
-                    'ri.image AS image_from_query, '
-                    'COUNT(l.id) as like_cnt '
-                 'FROM report_report '
-                 'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-                 'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
-                 'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
-                 'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
-                 'AND report_report.id NOT IN '+str_pk+' '
-                 'GROUP BY report_report.id '
-                 'ORDER BY report_report.created  DESC '
-                 'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
-                 , (pk, frt, frt)
-            )
+            # Simple reports
+            parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'pk': pk, 'frt': frt}
+            simple_reports = PlaceRepository.getWeekReports(placeRepoinst, parameters)
 
-
+        # TODAY
         else:
-                # TODAY
-            hot_reports = Place.objects.raw(
-                'SELECT '
-                    'report_report.id , '
-                    'report_report.created , '
-                    'report_report.description , '
-                    'report_report.place_id AS place, '
-                    'report_report.user_id AS user, '
-                    'report_report.report_image_id AS report_image, '
-                    'report_report.is_going , '
-                    'report_report.bar_filling , '
-                    'report_report.music_type , '
-                    'report_report.gender_relation , '
-                    'report_report.charge , '
-                    'report_report.queue , '
-                    'report_report.type , '
-                    'ri.image AS image_from_query, '
-                    'COUNT(l.id) as like_cnt '
-                'FROM report_report '
-                'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-                'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-                'WHERE report_report.place_id = %s AND report_report.enable = 1 '
-                'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
-                'GROUP BY report_report.id '
-                'ORDER BY like_cnt DESC , report_report.created  DESC '
-                'LIMIT 0,3'
-                , (pk, frt)
-            )
-
-            serializer_hgot_reports = ReportSerializer(hot_reports, many=True)
+            # Hot reports
+            parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
+            hot_reports = PlaceRepository.getTodayReportsHot(placeRepoinst, parameters)
+            serializer_hot_reports = ReportSerializer(hot_reports, many=True)
 
             # Remove duplicates
-            hot_data = self.getHotData(serializer_hgot_reports)
+            hot_data = self.getHotData(serializer_hot_reports)
             str_pk = hot_data['str_pk']
 
             # Correction limits
@@ -347,51 +215,26 @@ class SnippetDetail(APIView):
             correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
             correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
 
-            simple_reports = Place.objects.raw(
-                 'SELECT '
-                    'report_report.id , '
-                    'report_report.description , '
-                    'report_report.place_id AS place, '
-                    'report_report.user_id AS user, '
-                    'report_report.report_image_id AS report_image, '
-                    'report_report.is_going , '
-                    'report_report.bar_filling , '
-                    'report_report.music_type , '
-                    'report_report.gender_relation , '
-                    'report_report.charge , '
-                    'report_report.queue , '
-                    'report_report.type , '
-                    'report_report.created , '
-                    'ri.image AS image_from_query, '
-                    'COUNT(l.id) as like_cnt '
-                 'FROM report_report '
-                 'LEFT JOIN report_reportimagelike l ON l.report_id = report_report.id '
-                 'LEFT JOIN files_reportimage ri ON ri.id = report_report.report_image_id '
-                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
-                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(NOW(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
-                 'AND report_report.id NOT IN '+str_pk+' '
-                 'GROUP BY report_report.id '
-                 'ORDER BY report_report.created  DESC '
-                 'LIMIT '+str(correct_limit_from)+', '+str(correct_limit_count)
-                 , (pk, frt)
-            )
+            # Simple reports
+            parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'pk': pk, 'frt': frt}
+            simple_reports = PlaceRepository.getTodayReports(placeRepoinst, parameters)
+
 
         # IF limit_from > hot_count => Hot_places does not view
         if (correct_limit_from + hot_count) > hot_count:
             hot_reports_result = []
         else:
-            hot_reports_result = serializer_hgot_reports.data
+            hot_reports_result = serializer_hot_reports.data
         # import ipdb;ipdb.set_trace()
         serializer_simple_reports = ReportSerializer(simple_reports, many=True)
 
         place = self.get_object(pk)
         serializer_place = PlaceDetailSerializer(place, context={'my_check_in': my_check_in})
 
-
         return Response({
             'place': serializer_place.data
             , 'reports': hot_reports_result + serializer_simple_reports.data
-            # , 'field_for_testing(simple_pl)': serializer_simple_reports.data
+            # , 'field_for_testing(simple_pl)': hot_reports_result
                          })
 
     def put(self, request, pk, format=None):
@@ -435,10 +278,10 @@ class SnippetDetail(APIView):
 
         return correct_limit_count
 
-    def getHotData(self, serializer_hgot_reports):
+    def getHotData(self, serializer_hot_reports):
         str_ = ',0'
         hot_count = 0
-        for i in serializer_hgot_reports.data:
+        for i in serializer_hot_reports.data:
             hot_count +=1
             str_ = str_+','+str(i.get('pk'))
 
