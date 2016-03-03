@@ -27,4 +27,4 @@ class ReportImageLike(models.Model):
     report = models.ForeignKey(Report, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
-        ordering = ('id', )
+        ordering = ('id',)

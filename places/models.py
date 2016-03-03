@@ -17,6 +17,7 @@ class Place(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True)
     image = models.FileField(upload_to='place/%Y/%m/%d', blank=True, null=True)
+    logo = models.FileField(upload_to='place_logo/%Y/%m/%d', blank=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:

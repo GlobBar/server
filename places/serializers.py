@@ -20,6 +20,7 @@ class PlaceDetailSerializer(serializers.Serializer):
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=6)
     place_image = serializers.SerializerMethodField()
+    place_logo = serializers.SerializerMethodField()
     checkin_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
     last_users = serializers.SerializerMethodField()
@@ -35,6 +36,18 @@ class PlaceDetailSerializer(serializers.Serializer):
 
         if str(obj.image) != '':
             puth = str(obj.image)
+            res = settings.SITE_DOMAIN
+            res += '/media/'
+            res += puth
+        else:
+            res = None
+
+        return res
+
+    def get_place_logo(self, obj):
+
+        if str(obj.logo) != '':
+            puth = str(obj.logo)
             res = settings.SITE_DOMAIN
             res += '/media/'
             res += puth
@@ -72,6 +85,7 @@ class PlaceSerializer(serializers.Serializer):
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=6)
     place_image = serializers.SerializerMethodField()
+    place_logo = serializers.SerializerMethodField()
     distance = serializers.SerializerMethodField()
     checkin_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
@@ -118,6 +132,18 @@ class PlaceSerializer(serializers.Serializer):
 
         return res
 
+    def get_place_logo(self, obj):
+
+        if str(obj.logo) != '':
+            puth = str(obj.logo)
+            res = settings.SITE_DOMAIN
+            res += '/media/'
+            res += puth
+        else:
+            res = None
+
+        return res
+    
     def get_last_users(self, obj):
         last_checkins = Checkin.objects.filter(is_hidden=False, place=obj).order_by(Lower('created').desc())[0:10]
         serializer = LastUsersSerializer(last_checkins, many=True)

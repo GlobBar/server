@@ -23,6 +23,7 @@ class PlaceAdmin(admin.ModelAdmin):
                 'enable',
                 'latitude',
                 'longitude',
+                'logo',
                 'image',
             ]}),
         # ('Date information', {'fields': ['pub_date'], 'classes': ['collapse']}),

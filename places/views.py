@@ -391,7 +391,7 @@ class SnippetDetail(APIView):
         return Response({
             'place': serializer_place.data
             , 'reports': hot_reports_result + serializer_simple_reports.data
-            , 'field_for_testing(simple_pl)': serializer_simple_reports.data
+            # , 'field_for_testing(simple_pl)': serializer_simple_reports.data
                          })
 
     def put(self, request, pk, format=None):
