@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework import permissions
 from city.models import City
 from city.serializers import CitySerializer
-from report.serializers import ReportSerializer
+from report.serializers import ReportForListSerializer
 from datetime import datetime
 import pytz
 
@@ -164,7 +164,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getMonthReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -184,7 +184,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getWeekReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -204,7 +204,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getTodayReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -219,14 +219,12 @@ class SnippetDetail(APIView):
             parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'pk': pk, 'frt': frt}
             simple_reports = PlaceRepository.getTodayReports(placeRepoinst, parameters)
 
-
         # IF limit_from > hot_count => Hot_places does not view
         if (correct_limit_from + hot_count) > hot_count:
             hot_reports_result = []
         else:
             hot_reports_result = serializer_hot_reports.data
-        # import ipdb;ipdb.set_trace()
-        serializer_simple_reports = ReportSerializer(simple_reports, many=True)
+        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True)
 
         place = self.get_object(pk)
         serializer_place = PlaceDetailSerializer(place, context={'my_check_in': my_check_in})
@@ -254,7 +252,6 @@ class SnippetDetail(APIView):
         if limit_from == 'None' or limit_from == '0':
             limit_from = int(hot_count)
         elif int(limit_from) <= hot_count:
-            # raise Response({'error': 'Invalid parameter limit_from. It mast be > 3'}, status=status.HTTP_400_BAD_REQUEST)
             raise Http404
         else:
             limit_from = int(limit_from)
