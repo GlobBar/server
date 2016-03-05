@@ -66,9 +66,12 @@ class ReportForListSerializer(serializers.ModelSerializer):
     def get_owner(self, obj):
         # import ipdb;ipdb.set_trace()
 
-        user = User.objects.get(pk=obj.user)
-        serializer = OwnerSerializer(user)
-        return serializer.data
+        try:
+            user = User.objects.get(pk=obj.user)
+            serializer = OwnerSerializer(user)
+            return serializer.data
+        except:
+            return {}
 
     def get_report_image(self, obj):
 

@@ -143,11 +143,13 @@ class SnippetDetail(APIView):
         try:
             place = Place.objects.get(pk=pk)
             zone_title = place.city.time_zone
+            # TimeZone hours delta
+            tz_delta_dirty = datetime.now(pytz.timezone(zone_title)).strftime('%z')
         except:
             zone_title = 'America/Indiana/Indianapolis'
+            # TimeZone hours delta
+            tz_delta_dirty = datetime.now(pytz.timezone(zone_title)).strftime('%z')
 
-        # TimeZone hours delta
-        tz_delta_dirty = datetime.now(pytz.timezone(zone_title)).strftime('%z')
         if len(tz_delta_dirty) == 5:
             start = tz_delta_dirty
             finish = tz_delta_dirty
@@ -218,6 +220,7 @@ class SnippetDetail(APIView):
             # Simple reports
             parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'pk': pk, 'frt': frt}
             simple_reports = PlaceRepository.getTodayReports(placeRepoinst, parameters)
+
 
         # IF limit_from > hot_count => Hot_places does not view
         if (correct_limit_from + hot_count) > hot_count:
