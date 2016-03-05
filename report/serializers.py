@@ -57,7 +57,7 @@ class ReportForListSerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField()
 
     def to_representation(self, instance):
-        report = super(ReportSerializer, self).to_representation(instance)
+        report = super(ReportForListSerializer, self).to_representation(instance)
         for i in report:
             if report[i] is None:
                 del report[i]
