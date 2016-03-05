@@ -34,7 +34,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image'
+                  'charge', 'queue', 'type', 'report_image', 'description'
                   )
 
     def save(self, **kwargs):
@@ -91,6 +91,6 @@ class ReportForListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image'
+                  'charge', 'queue', 'type', 'report_image', 'description'
                   , 'owner'
                   )
