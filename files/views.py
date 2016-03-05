@@ -61,9 +61,11 @@ class ReportFileUploadView(APIView):
     def post(self, request, format=None):
         file_obj = request.data['file']
         place_pk = request.data['place_pk']
-        description = request.data['description']
-        if description == 'None':
-            description = None
+
+        try:
+           description = request.data['description']
+        except:
+           description = None
         user = request.user
         # import ipdb; ipdb.set_trace()
 
