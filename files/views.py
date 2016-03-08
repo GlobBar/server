@@ -24,7 +24,6 @@ class FileUploadView(APIView):
     def post(self, request, format=None):
         file_obj = request.data['file']
         user_pk = request.data['user_pk']
-        # import ipdb; ipdb.set_trace()
 
         try:
             user = User.objects.get(id=user_pk)
@@ -67,7 +66,6 @@ class ReportFileUploadView(APIView):
         except:
            description = None
         user = request.user
-        # import ipdb; ipdb.set_trace()
 
         try:
             place = Place.objects.get(id=place_pk)
@@ -80,11 +78,6 @@ class ReportFileUploadView(APIView):
         self.id = report_image.id
 
         report = Report(
-            # is_going=True,
-            # bar_filling=0,
-            # music_type=0,
-            # gender_relation=0,
-            # charge=0,
             description=description,
             type=1,  # (0 - report, 1 - picture)
             user=user,

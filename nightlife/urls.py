@@ -19,17 +19,15 @@ from django.conf.urls import url, include
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from files.views import ConvertTokenViewCustom
-# router = routers.DefaultRouter()
-# router.register(r'users', views.UserViewSet)
-# router.register(r'groups', views.GroupViewSet)
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    # url(r'^', include(router.urls)),
     url(r'^', include('places.urls')),
     url(r'^', include('report.urls')),
     url(r'^', include('apiusers.urls')),
     url(r'^', include('files.urls')),
+    url(r'^', include('friends.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^auth/convert-token/?$', ConvertTokenViewCustom.as_view(), name="convert_token"),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),
