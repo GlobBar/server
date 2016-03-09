@@ -62,7 +62,8 @@ class OwnerSerializer(serializers.ModelSerializer):
 
     def get_profile_image(self, obj):
         try:
-            puth = str(obj.image)
+            # import ipdb; ipdb.set_trace()
+            puth = str(obj.profileimage.image)
             is_absolut_puth = puth.find('http')
 
             if is_absolut_puth == -1:

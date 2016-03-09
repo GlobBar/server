@@ -48,7 +48,7 @@ class ReportImageLikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportImageLike
-        fields = ('pk', 'user', 'report')
+        fields = ('pk', 'user', 'report', 'description')
 
 
 class ReportForListSerializer(serializers.ModelSerializer):
