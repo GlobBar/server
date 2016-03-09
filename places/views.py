@@ -290,7 +290,6 @@ class SnippetDetail(APIView):
         return {'hot_count': hot_count, 'str_pk': str_pk}
 
 
-
 class CheckinList(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
@@ -302,32 +301,56 @@ class CheckinList(APIView):
 
     def post(self, request, format=None):
 
-        checkin = Checkin.objects.filter(user=request.user).first()
+        try:
+            place = Place.objects.get(pk=request.POST.get('place_pk'))
+        except Place.DoesNotExist:
+            return Response({'error': 'Invalid place_pk'}, status=status.HTTP_400_BAD_REQUEST)
+
+        checkin = Checkin.objects.filter(user=request.user, place=place).first()
 
         if checkin is None:
             request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk')})
             serializer = CheckinSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
+                if 'is_hidden' in request.POST:
+                    hidden = str(request.POST.get('is_hidden'))
+                    if hidden.lower() == 'true':
+                        checkin.is_hidden = True
+                    else:
+                        checkin.is_hidden = False
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            try:
-                place = Place.objects.get(pk=request.POST.get('place_pk'))
-            except Place.DoesNotExist:
-                return Response({'error': 'Invalid place_pk'}, status=status.HTTP_400_BAD_REQUEST)
-            checkin.place = place
             # import ipdb; ipdb.set_trace()
             if 'is_hidden' in request.POST:
-                if str(request.POST.get('is_hidden')) == 'true':
+                hidden = str(request.POST.get('is_hidden'))
+                if hidden.lower() == 'true':
                     checkin.is_hidden = True
                 else:
                     checkin.is_hidden = False
+
+            checkin.created = datetime.now()
+            checkin.active = True
+
+
+            # Enable old active check-ins
+            self.clear_old_check_ins(request.user)
 
             checkin.save()
             serializer = CheckinSerializer(checkin)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def clear_old_check_ins(self, user):
+        # import ipdb;ipdb.set_trace()
+        checkins = Checkin.objects.filter(user=user, active=True)
+        if checkins.count() > 0:
+            for check in checkins:
+                check.active = False
+                check.save()
+
+        return True
 
 
 class LikeList(APIView):
