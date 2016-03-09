@@ -78,22 +78,15 @@ class SnippetList(APIView):
                 'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
                 'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
                 '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
-                'AS distance, '
-                'COUNT(ch.id) as checkin_cnt, '
-                'COUNT(l.id) as like_cnt '
+                'AS distance '
 
             'FROM places_place '
-            'LEFT JOIN places_checkin ch ON ch.place_id = places_place.id '
-            'LEFT JOIN places_like l ON l.place_id = places_place.id '
-
             ' '+my_city_pk+' '
             'GROUP BY places_place.id '
             'ORDER BY places_place.created_lst_rpt DESC, distance ASC '
-
-
             'LIMIT '+limitFrom+', '+limitCount+''
         )
-        my_checin = Checkin.objects.filter(user=request.user).first()
+        my_checin = Checkin.objects.filter(user=request.user, active=True).first()
         if my_checin is None:
             my_check_in = None
         else:
@@ -134,7 +127,7 @@ class SnippetDetail(APIView):
         if limit_count == 'None':
             limit_count = '9'
 
-        my_checin = Checkin.objects.filter(user=request.user).first()
+        my_checin = Checkin.objects.filter(user=request.user, active=True).first()
         if my_checin is None:
             my_check_in = None
         else:
@@ -314,10 +307,15 @@ class CheckinList(APIView):
             if serializer.is_valid():
                 if 'is_hidden' in request.POST:
                     hidden = str(request.POST.get('is_hidden'))
+                    # import ipdb; ipdb.set_trace()
                     if hidden.lower() == 'true':
-                        checkin.is_hidden = True
+                        serializer.is_hidden = True
                     else:
-                        checkin.is_hidden = False
+                        serializer.is_hidden = False
+
+                # Enable old active check-ins
+                self.clear_old_check_ins(request.user)
+
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:

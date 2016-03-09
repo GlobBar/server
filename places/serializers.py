@@ -3,7 +3,7 @@ from places.models import Place, Checkin, Like
 from django.conf import settings
 from django.db.models.functions import Lower
 from apiusers.serializers import LastUsersSerializer
-
+from datetime import date, datetime, time
 
 class PlaceDetailSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -24,7 +24,7 @@ class PlaceDetailSerializer(serializers.Serializer):
     my_check_in = serializers.SerializerMethodField()
 
     def get_checkin_cnt(self, obj):
-        return obj.checkin_set.count()
+        return obj.checkin_set.filter(active=True, is_hidden=False).count()
 
     def get_like_cnt(self, obj):
         return obj.like_set.count()
@@ -54,7 +54,15 @@ class PlaceDetailSerializer(serializers.Serializer):
         return res
 
     def get_last_users(self, obj):
-        last_checkins = Checkin.objects.filter(is_hidden=False, place=obj).order_by(Lower('created').desc())[0:10]
+        today_min = datetime.combine(date.today(), time.min)
+        today_max = datetime.combine(date.today(), time.max)
+
+        last_checkins = Checkin.objects.filter(
+            is_hidden=False,
+            place=obj,
+            created__range=(today_min, today_max),
+        ).order_by(Lower('created').desc())[0:10]
+
         serializer = LastUsersSerializer(last_checkins, many=True)
         return serializer.data
 
@@ -142,7 +150,14 @@ class PlaceSerializer(serializers.Serializer):
         return res
 
     def get_last_users(self, obj):
-        last_checkins = Checkin.objects.filter(is_hidden=False, place=obj).order_by(Lower('created').desc())[0:10]
+        today_min = datetime.combine(date.today(), time.min)
+        today_max = datetime.combine(date.today(), time.max)
+
+        last_checkins = Checkin.objects.filter(
+            is_hidden=False,
+            place=obj,
+            created__range=(today_min, today_max),
+        ).order_by(Lower('created').desc())[0:10]
         serializer = LastUsersSerializer(last_checkins, many=True)
         return serializer.data
 
@@ -171,26 +186,32 @@ class PlaceSerializer(serializers.Serializer):
             distance = 0
         return distance
 
+    # def get_checkin_cnt(self, obj):
+    #     try:
+    #         checkin_cnt = obj.checkin_cnt
+    #     except AttributeError:
+    #         checkin_cnt = 0
+    #     return checkin_cnt
+    #
+    # def get_like_cnt(self, obj):
+    #     try:
+    #         like_cnt = obj.like_cnt
+    #     except AttributeError:
+    #         like_cnt = 0
+    #     return like_cnt
+
     def get_checkin_cnt(self, obj):
-        try:
-            checkin_cnt = obj.checkin_cnt
-        except AttributeError:
-            checkin_cnt = 0
-        return checkin_cnt
+        return obj.checkin_set.filter(active=True, is_hidden=False).count()
 
     def get_like_cnt(self, obj):
-        try:
-            like_cnt = obj.like_cnt
-        except AttributeError:
-            like_cnt = 0
-        return like_cnt
+        return obj.like_set.count()
 
 
 class CheckinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Checkin
-        fields = ('pk', 'user', 'place')
+        fields = ('pk', 'user', 'place', 'is_hidden')
 
 
 class LikeSerializer(serializers.ModelSerializer):
