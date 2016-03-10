@@ -302,8 +302,11 @@ class CheckinList(APIView):
         checkin = Checkin.objects.filter(user=request.user, place=place).first()
 
         if checkin is None:
-            request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk')})
-            serializer = CheckinSerializer(data=request.data, context={'request': request})
+            # request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk')})
+            # import ipdb;ipdb.set_trace()
+            d = {'user': request.user.pk, 'place': request.POST.get('place_pk')}
+            serializer = CheckinSerializer(data=d, context={'request': request})
+            # serializer = CheckinSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 if 'is_hidden' in request.POST:
                     hidden = str(request.POST.get('is_hidden'))
