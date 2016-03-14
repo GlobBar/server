@@ -67,6 +67,7 @@ class SnippetList(APIView):
         places = Place.objects.raw(
             'SELECT '
                 'places_place.id , '
+                'places_place.city_id , '
                 'places_place.title, '
                 'places_place.address, '
                 'places_place.description, '
@@ -92,7 +93,7 @@ class SnippetList(APIView):
         else:
             my_check_in = my_checin.place.pk
 
-        serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in})
+        serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in, 'my_check_in_entity': my_checin})
 
         cities = City.objects.filter(enable=1)
         city_serializer = CitySerializer(cities, many=True)

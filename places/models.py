@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from city.models import City
+from datetime import datetime, timedelta
 
 
 class Place(models.Model):
@@ -20,16 +21,23 @@ class Place(models.Model):
     logo = models.FileField(upload_to='place_logo/%Y/%m/%d', blank=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
 
+
     class Meta:
         ordering = ('id', )
 
 
 class Checkin(models.Model):
+
+    now = datetime.now()
+    expired_time = now.replace(hour=23, minute=59, second=59, microsecond=0)
+
     created = models.DateTimeField(auto_now_add=True)
+    expired = models.DateTimeField(default=expired_time)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
     is_hidden = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
+
 
     class Meta:
         ordering = ('id', )
@@ -42,5 +50,6 @@ class Like(models.Model):
 
     class Meta:
         ordering = ('id', )
+
 
 

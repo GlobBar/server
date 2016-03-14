@@ -5,6 +5,7 @@ from django.db.models.functions import Lower
 from apiusers.serializers import LastUsersSerializer
 from datetime import date, datetime, time
 
+
 class PlaceDetailSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
     title = serializers.CharField(required=True, allow_blank=True, max_length=100)
@@ -97,10 +98,18 @@ class PlaceSerializer(serializers.Serializer):
     last_users = serializers.SerializerMethodField()
     my_check_in = serializers.SerializerMethodField()
     city = serializers.SerializerMethodField()
+    city_pk = serializers.SerializerMethodField()
 
 
     def get_all_city(self, obj):
         return None
+
+    def get_city_pk(self, obj):
+        if obj.city_id is not None:
+            city_id = obj.city_id
+        else:
+            city_id = None
+        return city_id
 
 
     def get_city(self, obj):
@@ -121,9 +130,19 @@ class PlaceSerializer(serializers.Serializer):
 
         if obj.pk == my_check_in:
             res = True
+            import ipdb;ipdb.set_trace()
+            try:
+                check_in_entity = self.context['my_check_in_entity']
+                expired = check_in_entity.expired
+
+            except:
+                expired = None
+
         else:
             res = False
-        return res
+            expired = None
+
+        return {'is_my': res, 'expired': expired}
 
     def get_place_image(self, obj):
 
@@ -186,20 +205,6 @@ class PlaceSerializer(serializers.Serializer):
             distance = 0
         return distance
 
-    # def get_checkin_cnt(self, obj):
-    #     try:
-    #         checkin_cnt = obj.checkin_cnt
-    #     except AttributeError:
-    #         checkin_cnt = 0
-    #     return checkin_cnt
-    #
-    # def get_like_cnt(self, obj):
-    #     try:
-    #         like_cnt = obj.like_cnt
-    #     except AttributeError:
-    #         like_cnt = 0
-    #     return like_cnt
-
     def get_checkin_cnt(self, obj):
         return obj.checkin_set.filter(is_hidden=False).count()
 
@@ -211,7 +216,7 @@ class CheckinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Checkin
-        fields = ('pk', 'user', 'place', 'is_hidden')
+        fields = ('pk', 'user', 'place', 'is_hidden', 'expired',)
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -220,14 +225,5 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ('pk', 'place', 'user',)
 
-    # def save(self, **kwargs):
-    #     like = super(LikeSerializer, self).save(**kwargs)
-    #     like.user = self.context['request'].user
-    #     try:
-    #         place = Place.objects.get(pk=self.context['request'].POST.get('place_pk'))
-    #         like.place = place
-    #     except Place.DoesNotExist:
-    #         raise Http404
-    #
-        # return like.save()
+
 
