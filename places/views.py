@@ -302,27 +302,14 @@ class CheckinList(APIView):
         checkin = Checkin.objects.filter(user=request.user, place=place).first()
 
         if checkin is None:
-            # request.data.update({'user': request.user.pk, 'place': request.POST.get('place_pk')})
-            # import ipdb;ipdb.set_trace()
             d = {'user': request.user.pk, 'place': request.POST.get('place_pk'), 'is_hidden': request.POST.get('is_hidden')}
             serializer = CheckinSerializer(data=d, context={'request': request})
-            # serializer = CheckinSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
-                # if 'is_hidden' in request.POST:
-                #     hidden = str(request.POST.get('is_hidden'))
-                #     import ipdb; ipdb.set_trace()
-                #     if hidden.lower() == 'true':
-                #         serializer.is_hidden = True
-                #     else:
-                #         serializer.is_hidden = False
-
-                # Enable old active check-ins
                 self.clear_old_check_ins(request.user)
 
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            # import ipdb; ipdb.set_trace()
             if 'is_hidden' in request.POST:
                 hidden = str(request.POST.get('is_hidden'))
                 if hidden.lower() == 'true':
@@ -332,7 +319,6 @@ class CheckinList(APIView):
 
             checkin.created = datetime.now()
             checkin.active = True
-
 
             # Enable old active check-ins
             self.clear_old_check_ins(request.user)
@@ -344,7 +330,6 @@ class CheckinList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def clear_old_check_ins(self, user):
-        # import ipdb;ipdb.set_trace()
         checkins = Checkin.objects.filter(user=user, active=True)
         if checkins.count() > 0:
             for check in checkins:

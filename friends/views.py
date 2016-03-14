@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from friends.relation_strategy import FriendRelation, RequestRelation, FollowingRelation
+from friends.models import Relation
+from friends.serializers import RelationSerializer
+
 
 
 class RelationList(APIView):
@@ -57,4 +60,16 @@ class RelationList(APIView):
             return Response({'error': 'Invalid friend_pk'}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'data': 'Relation successfully created/removed.'}, status=status.HTTP_201_CREATED)
+
+
+class FollowerList(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        checkin = Relation.objects.all()
+
+
+        serializer = RelationSerializer(checkin, many=True)
+        return Response(serializer.data)
 

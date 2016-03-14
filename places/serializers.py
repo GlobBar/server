@@ -24,7 +24,7 @@ class PlaceDetailSerializer(serializers.Serializer):
     my_check_in = serializers.SerializerMethodField()
 
     def get_checkin_cnt(self, obj):
-        return obj.checkin_set.filter(active=True, is_hidden=False).count()
+        return obj.checkin_set.filter(is_hidden=False).count()
 
     def get_like_cnt(self, obj):
         return obj.like_set.count()
@@ -201,7 +201,7 @@ class PlaceSerializer(serializers.Serializer):
     #     return like_cnt
 
     def get_checkin_cnt(self, obj):
-        return obj.checkin_set.filter(active=True, is_hidden=False).count()
+        return obj.checkin_set.filter(is_hidden=False).count()
 
     def get_like_cnt(self, obj):
         return obj.like_set.count()

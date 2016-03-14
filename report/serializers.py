@@ -8,6 +8,7 @@ from apiusers.serializers import OwnerSerializer
 class ReportSerializer(serializers.ModelSerializer):
 
     report_image = serializers.SerializerMethodField()
+    created = serializers.SerializerMethodField()
 
     def to_representation(self, instance):
         report = super(ReportSerializer, self).to_representation(instance)
@@ -26,6 +27,18 @@ class ReportSerializer(serializers.ModelSerializer):
             res = settings.SITE_DOMAIN
             res += '/media/'
             res += puth
+        else:
+            res = None
+        return res
+
+    def get_created(self, obj):
+
+        if obj.created is not None:
+            # import ipdb;ipdb.set_trace()
+            try:
+                res = obj.created.strftime('%Y-%m-%dT%H:%M:%SZ')
+            except:
+                res = None
         else:
             res = None
         return res
