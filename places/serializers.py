@@ -130,7 +130,6 @@ class PlaceSerializer(serializers.Serializer):
 
         if obj.pk == my_check_in:
             res = True
-            import ipdb;ipdb.set_trace()
             try:
                 check_in_entity = self.context['my_check_in_entity']
                 expired = check_in_entity.expired
