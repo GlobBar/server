@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from places.models import Place
+from city.models import City
 from files.models import ReportImage
 from django.contrib.auth.models import User
 
