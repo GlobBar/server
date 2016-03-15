@@ -318,6 +318,10 @@ class CheckinList(APIView):
                 else:
                     checkin.is_hidden = False
 
+            now = datetime.now()
+            expired_time = now.replace(hour=23, minute=59, second=59, microsecond=0)
+
+            checkin.expired = expired_time
             checkin.created = datetime.now()
             checkin.active = True
 
