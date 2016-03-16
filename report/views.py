@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework import permissions
 from report.serializers import ReportSerializer, ReportImageLikeSerializer, ReportForListSerializer
 from report.models import ReportImageLike, Report
-from places.models import Place, Checkin
+from places.models import Place, Checkin, Like
 from city.models import City
 from datetime import datetime
 import pytz
@@ -75,6 +75,7 @@ class ReportsByPeriod(APIView):
             raise Http404
 
     def get(self, request, format=None):
+        user_id = request.user
         pk = None
         city_pk = str(request.GET.get('filter_city'))
         limit_from = str(request.GET.get('limit_from'))
@@ -84,6 +85,10 @@ class ReportsByPeriod(APIView):
             limit_from = '0'
         if limit_count == 'None':
             limit_count = '9'
+
+
+
+
 
         my_checin = Checkin.objects.filter(user=request.user, active=True).first()
         if my_checin is None:
@@ -129,7 +134,13 @@ class ReportsByPeriod(APIView):
             correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
 
             # Simple reports
-            parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'city_pk': city_pk, 'frt': frt}
+            parameters = {'tz_delta': tz_delta,
+                          'str_pk': str_pk,
+                          'correct_limit_from': correct_limit_from,
+                          'correct_limit_count': correct_limit_count,
+                          'city_pk': city_pk,
+                          'frt': frt
+                          }
             simple_reports = ReportRepository.getTodayReports(reportRepoinst, parameters)
 
         else:

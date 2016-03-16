@@ -18,7 +18,7 @@ class SnippetList(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-
+        user_id = str(request.user.pk)
         limitFrom = str(request.GET.get('limit_from'))
         limitCount = str(request.GET.get('limit_count'))
 
@@ -87,13 +87,26 @@ class SnippetList(APIView):
             'ORDER BY places_place.created_lst_rpt DESC, distance ASC '
             'LIMIT '+limitFrom+', '+limitCount+''
         )
+
+        # My likes
+        my_like_place_pks = []
+        my_likes = Like.objects.filter(user=request.user)
+        if my_likes.count() > 0:
+            for i in my_likes:
+                my_like_place_pks += [str(i.place.pk)]
+
+        # My check ins
         my_checin = Checkin.objects.filter(user=request.user, active=True).first()
         if my_checin is None:
             my_check_in = None
         else:
             my_check_in = my_checin.place.pk
 
-        serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in, 'my_check_in_entity': my_checin})
+        serializer = PlaceSerializer(places, many=True, context={
+            'my_check_in': my_check_in,
+            'my_check_in_entity': my_checin,
+            'my_like_place_pks': my_like_place_pks
+        })
 
         cities = City.objects.filter(enable=1)
         city_serializer = CitySerializer(cities, many=True)

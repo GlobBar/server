@@ -97,6 +97,7 @@ class PlaceSerializer(serializers.Serializer):
     like_cnt = serializers.SerializerMethodField()
     last_users = serializers.SerializerMethodField()
     my_check_in = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
     city = serializers.SerializerMethodField()
     city_pk = serializers.SerializerMethodField()
 
@@ -120,7 +121,6 @@ class PlaceSerializer(serializers.Serializer):
             city = None
         return city
 
-
     def get_my_check_in(self, obj):
 
         try:
@@ -142,6 +142,21 @@ class PlaceSerializer(serializers.Serializer):
             expired = None
 
         return {'is_my': res, 'expired': expired}
+
+    # LIKE
+    def get_is_liked(self, obj):
+
+        try:
+            my_like_place_pks = self.context['my_like_place_pks']
+        except:
+            my_like_place_pks = []
+
+        if str(obj.pk) in my_like_place_pks:
+            res = True
+        else:
+            res = False
+
+        return res
 
     def get_place_image(self, obj):
 
