@@ -349,10 +349,47 @@ class LikeList(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-        like = Like.objects.all()
-        serializer = LikeSerializer(like, many=True)
+
+        limitFrom = str(request.GET.get('limit_from'))
+        limitCount = str(request.GET.get('limit_count'))
+
+        if limitFrom == 'None':
+            limitFrom = '0'
+        if limitCount == 'None':
+            limitCount = '100000'
+
+        user_id = str(request.user.id)
+
+        places = Place.objects.raw(
+            'SELECT '
+                'places_place.id , '
+                'places_place.city_id , '
+                'places_place.title, '
+                'places_place.address, '
+                'places_place.description, '
+                'places_place.enable, '
+                'places_place.created, '
+                'places_place.created_lst_rpt '
+
+            'FROM places_like '
+            'LEFT JOIN places_place  ON places_place.id = places_like.place_id '
+            
+            'WHERE places_like.user_id = '+user_id+' '
+            'GROUP BY places_place.id '
+            'ORDER BY places_place.created_lst_rpt DESC '
+            'LIMIT '+limitFrom+', '+limitCount+''
+        )
+
+        my_checin = Checkin.objects.filter(user=request.user, active=True).first()
+        if my_checin is None:
+            my_check_in = None
+        else:
+            my_check_in = my_checin.place.pk
+
+        serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in, 'my_check_in_entity': my_checin})
         return Response(serializer.data)
 
+    # Create Like
     def post(self, request, format=None):
         place_id = request.POST.get('place_pk')
         user_id = request.user.id
@@ -370,3 +407,36 @@ class LikeList(APIView):
 
 
 
+class CityList(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        latitude = str(request.GET.get('latitude'))
+        longitude = str(request.GET.get('longitude'))
+
+        if latitude == 'None':
+            return Response({'error': 'Invalid or missing perameter latitude in u request'}, status=status.HTTP_400_BAD_REQUEST)
+        if longitude == 'None':
+            return Response({'error': 'Invalid or missing perameter longitude in u request'}, status=status.HTTP_400_BAD_REQUEST)
+
+        cities = City.objects.raw(
+                'SELECT '
+                    'city_city.id, '
+                    'city_city.title, '
+                    'city_city.latitude, '
+                    'city_city.longitude, '
+                    'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                    'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                    '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) AS distance '
+
+                'FROM city_city '
+                'WHERE city_city.enable = 1 '
+                'ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                    'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                    '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                    '  ASC '
+            )
+        city_serializer = CitySerializer(cities, many=True)
+
+        return Response({'cities': city_serializer.data})

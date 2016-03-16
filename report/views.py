@@ -8,7 +8,6 @@ from report.serializers import ReportSerializer, ReportImageLikeSerializer, Repo
 from report.models import ReportImageLike, Report
 from places.models import Place, Checkin
 from city.models import City
-from places.serializers import PlaceDetailSerializer
 from datetime import datetime
 import pytz
 from report.report_repository import ReportRepository
@@ -77,7 +76,7 @@ class ReportsByPeriod(APIView):
 
     def get(self, request, format=None):
         pk = None
-        city_pk = str(request.GET.get('city_pk'))
+        city_pk = str(request.GET.get('filter_city'))
         limit_from = str(request.GET.get('limit_from'))
         limit_count = str(request.GET.get('limit_count'))
 
@@ -189,3 +188,6 @@ class ReportsByPeriod(APIView):
         str_pk = '('+str_[1:]+')'
 
         return {'hot_count': hot_count, 'str_pk': str_pk}
+
+
+
