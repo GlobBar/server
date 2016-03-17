@@ -66,10 +66,86 @@ class FollowerList(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
+    FRIEND_STATUS = 1
+    I_SEND_REQUEST_STATUS = 2
+    I_GET_REQUEST_STATUS = 3
+    MY_FOLLOWER_STATUS = 4  # Friend following his user
+    I_FOLLOWING_STATUS = 5  # User following his friend
+
     def get(self, request, format=None):
-        checkin = Relation.objects.all()
+
+        limit_from = str(request.GET.get('limit_from'))
+        limit_count = str(request.GET.get('limit_count'))
+        if limit_from == 'None':
+            limit_from = '0'
+        if limit_count == 'None':
+            limit_count = '100000'
+
+        follovers = Relation.objects.raw(
+                'SELECT '
+                    'friends_relation.id, '
+                    'friends_relation.status, '
+                    'auth_user.id AS user_pk, '
+                    'auth_user.username AS user_name, '
+                    'files_profileimage.image AS user_image '
 
 
-        serializer = RelationSerializer(checkin, many=True)
+                'FROM friends_relation '
+                'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
+                'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
+
+                'WHERE friends_relation.status IN('+str(self.I_SEND_REQUEST_STATUS)+', '
+                ' '+str(self.I_FOLLOWING_STATUS)+' ) '
+                'AND friends_relation.friend_id = '+str(request.user.pk)+' '
+
+                'ORDER BY friends_relation.status ASC '
+                'LIMIT '+limit_from+', '+limit_count+''
+            )
+
+        serializer = RelationSerializer(follovers, many=True)
+        return Response(serializer.data)
+
+
+class FollowingsList(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    FRIEND_STATUS = 1
+    I_SEND_REQUEST_STATUS = 2
+    I_GET_REQUEST_STATUS = 3
+    MY_FOLLOWER_STATUS = 4  # Friend following his user
+    I_FOLLOWING_STATUS = 5  # User following his friend
+
+    def get(self, request, format=None):
+
+        limit_from = str(request.GET.get('limit_from'))
+        limit_count = str(request.GET.get('limit_count'))
+        if limit_from == 'None':
+            limit_from = '0'
+        if limit_count == 'None':
+            limit_count = '100000'
+
+        follovers = Relation.objects.raw(
+                'SELECT '
+                    'friends_relation.id, '
+                    'friends_relation.status, '
+                    'auth_user.id AS user_pk, '
+                    'auth_user.username AS user_name, '
+                    'files_profileimage.image AS user_image '
+
+
+                'FROM friends_relation '
+                'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
+                'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
+
+                'WHERE friends_relation.status IN('+str(self.I_GET_REQUEST_STATUS)+', '
+                ' '+str(self.MY_FOLLOWER_STATUS)+' ) '
+                'AND friends_relation.friend_id = '+str(request.user.pk)+' '
+
+                'ORDER BY friends_relation.status ASC '
+                'LIMIT '+limit_from+', '+limit_count+''
+            )
+
+        serializer = RelationSerializer(follovers, many=True)
         return Response(serializer.data)
 
