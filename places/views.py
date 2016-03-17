@@ -400,13 +400,24 @@ class LikeList(APIView):
             my_check_in = my_checin.place.pk
 
         serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in, 'my_check_in_entity': my_checin})
-        return Response(serializer.data)
+        return Response({"places": serializer.data})
 
     # Create Like
     def post(self, request, format=None):
         place_id = request.POST.get('place_pk')
         user_id = request.user.id
         like = Like.objects.filter(place_id=place_id, user=request.user).first()
+
+        # Remove Like
+        if 'remove_like' in request.POST:
+            if like is None:
+                pass
+            else:
+                remove = str(request.POST.get('remove_like'))
+                if remove.lower() == 'true':
+                    like.delete()
+                    return Response({'data': 'successfully remove.'}, status=status.HTTP_200_OK)
+
         # Create just one like for user in this place
         if like is None:
             # request.data.update()
