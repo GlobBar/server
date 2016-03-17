@@ -409,8 +409,8 @@ class LikeList(APIView):
         like = Like.objects.filter(place_id=place_id, user=request.user).first()
         # Create just one like for user in this place
         if like is None:
-            request.data.update({'user': user_id, 'place': place_id})
-            serializer = LikeSerializer(data=request.data, context={'request': request})
+            # request.data.update()
+            serializer = LikeSerializer(data={'user': user_id, 'place': place_id}, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
