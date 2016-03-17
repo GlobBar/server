@@ -399,7 +399,19 @@ class LikeList(APIView):
         else:
             my_check_in = my_checin.place.pk
 
-        serializer = PlaceSerializer(places, many=True, context={'my_check_in': my_check_in, 'my_check_in_entity': my_checin})
+        # My likes
+        my_like_place_pks = []
+        my_likes = Like.objects.filter(user=request.user)
+        if my_likes.count() > 0:
+            for i in my_likes:
+                my_like_place_pks += [str(i.place.pk)]
+
+        serializer = PlaceSerializer(places, many=True, context={
+            'my_check_in': my_check_in,
+            'my_check_in_entity': my_checin,
+            'my_like_place_pks': my_like_place_pks,
+
+        })
         return Response({"places": serializer.data})
 
     # Create Like
