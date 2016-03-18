@@ -262,7 +262,8 @@ class SnippetDetail(APIView):
         if limit_from == 'None' or limit_from == '0':
             limit_from = int(hot_count)
         elif int(limit_from) <= hot_count:
-            raise Http404
+            limit_from = int(hot_count)
+            return limit_from
         else:
             limit_from = int(limit_from)
 
