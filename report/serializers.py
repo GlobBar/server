@@ -3,12 +3,20 @@ from report.models import Report, ReportImageLike
 from django.conf import settings
 from django.contrib.auth.models import User
 from apiusers.serializers import OwnerSerializer
-
+from files.models import  ReportImage
+import os
 
 class ReportSerializer(serializers.ModelSerializer):
 
     report_image = serializers.SerializerMethodField()
     created = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
+
+    def get_thumbnail(self, obj):
+        thumbnail_path = obj.report_image.image_thumbnail.url
+        res = settings.SITE_DOMAIN
+        res += thumbnail_path
+        return res
 
     def to_representation(self, instance):
         report = super(ReportSerializer, self).to_representation(instance)
@@ -47,7 +55,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description'
+                  'charge', 'queue', 'type', 'report_image', 'description', 'thumbnail'
                   )
 
     def save(self, **kwargs):
@@ -68,6 +76,20 @@ class ReportForListSerializer(serializers.ModelSerializer):
 
     report_image = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
+
+    def get_thumbnail(self, obj):
+        res = None
+
+        path = obj.image_from_query
+        if path is not None:
+            abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
+            # import ipdb;ipdb.set_trace()
+            if os.path.isfile(abs_path):
+                res = settings.SITE_DOMAIN
+                res += '/media/thumbs/'
+                res += path
+        return res
 
     def to_representation(self, instance):
         report = super(ReportForListSerializer, self).to_representation(instance)
@@ -105,5 +127,5 @@ class ReportForListSerializer(serializers.ModelSerializer):
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
                   'charge', 'queue', 'type', 'report_image', 'description'
-                  , 'owner'
+                  , 'owner', 'thumbnail'
                   )

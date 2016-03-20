@@ -86,10 +86,6 @@ class ReportsByPeriod(APIView):
         if limit_count == 'None':
             limit_count = '9'
 
-
-
-
-
         my_checin = Checkin.objects.filter(user=request.user, active=True).first()
         if my_checin is None:
             my_check_in = None
