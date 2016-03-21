@@ -139,6 +139,58 @@ class ReportsByPeriod(APIView):
                           }
             simple_reports = ReportRepository.getTodayReports(reportRepoinst, parameters)
 
+        # WEEK
+        elif str(request.GET.get('period_filter')) == 'week':
+            # Hot reports
+            parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
+            hot_reports = ReportRepository.getWeekReportsHot(reportRepoinst, parameters)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+
+            # Remove duplicates
+            hot_data = self.getHotData(serializer_hot_reports)
+            str_pk = hot_data['str_pk']
+
+            # Correction limits
+            hot_count = hot_data['hot_count']
+            correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
+            correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
+
+            # Simple reports
+            parameters = {'tz_delta': tz_delta,
+                          'str_pk': str_pk,
+                          'correct_limit_from': correct_limit_from,
+                          'correct_limit_count': correct_limit_count,
+                          'city_pk': city_pk,
+                          'frt': frt
+                          }
+            simple_reports = ReportRepository.getWeekReports(reportRepoinst, parameters)
+
+        # MONTH
+        elif str(request.GET.get('period_filter')) == 'month':
+            # Hot reports
+            parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
+            hot_reports = ReportRepository.getMonthReportsHot(reportRepoinst, parameters)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+
+            # Remove duplicates
+            hot_data = self.getHotData(serializer_hot_reports)
+            str_pk = hot_data['str_pk']
+
+            # Correction limits
+            hot_count = hot_data['hot_count']
+            correct_limit_from = self.correctionLimitFrom(limit_from, hot_count)
+            correct_limit_count = self.correctionLimitCount(limit_from, limit_count, hot_count)
+
+            # Simple reports
+            parameters = {'tz_delta': tz_delta,
+                          'str_pk': str_pk,
+                          'correct_limit_from': correct_limit_from,
+                          'correct_limit_count': correct_limit_count,
+                          'city_pk': city_pk,
+                          'frt': frt
+                          }
+            simple_reports = ReportRepository.getMonthReports(reportRepoinst, parameters)
+
         else:
             return Response('Parameter period_filter  incorrect or not found', status=status.HTTP_400_BAD_REQUEST)
 

@@ -15,6 +15,7 @@ class ReportImage(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     image_thumbnail = ImageSpecField(source='image', id='images:thumb_',)
 
+
 class ThumbnailSpec(ImageSpec):
     processors = [ResizeToFill(300, 300)]
     format = 'JPEG'
