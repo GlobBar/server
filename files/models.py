@@ -16,9 +16,9 @@ class ReportImage(models.Model):
     image_thumbnail = ImageSpecField(source='image', id='images:thumb_',)
 
 class ThumbnailSpec(ImageSpec):
-    processors = [ResizeToFill(300, 150)]
+    processors = [ResizeToFill(300, 300)]
     format = 'JPEG'
-    options = {'quality': 90}
+    options = {'quality': 70}
 
     # put thumbnails into the "photos/thumbs" folder and
     # name them the same as the source file
