@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from apiusers.serializers import UserSerializer, GroupSerializer
+from apiusers.serializers import UserSerializer, GroupSerializer, UserDetailSerializer
 from rest_framework import permissions
 from django.http import Http404
 from rest_framework.views import APIView
@@ -16,7 +16,28 @@ class UserList(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
-        users = User.objects.all()
+        users = None
+        limit_from = str(request.GET.get('limit_from'))
+        limit_count = str(request.GET.get('limit_count'))
+
+        if limit_from == 'None':
+            limit_from = '0'
+        if limit_count == 'None':
+            limit_count = '1000'
+
+        one = int(limit_from)
+        two = int(limit_count)
+        li = [one, two]
+        suuuu = sum(li)
+
+        if 'search' in request.GET:
+            search_str = request.GET.get('search')
+            if len(search_str) > 0:
+                users = User.objects.filter(username__icontains=search_str)[one:suuuu]
+        if users is None:
+
+            users = User.objects.all()[one:suuuu]
+
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
@@ -45,7 +66,8 @@ class UserDetail(APIView):
             user = request.user
         else:
             user = self.get_object(pk)
-        serializer = UserSerializer(user)
+
+        serializer = UserDetailSerializer(user)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):

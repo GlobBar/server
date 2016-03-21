@@ -4,6 +4,8 @@ from rest_framework import serializers
 from files.models import ProfileImage
 from django.conf import settings
 import os
+from friends.models import Relation
+
 
 class UserSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -26,6 +28,53 @@ class UserSerializer(serializers.Serializer):
 
         instance.save()
         return instance
+
+    def get_profile_image(self, obj):
+        try:
+            profile_image = ProfileImage.objects.get(owner=obj)
+            puth = str(profile_image.image)
+            is_absolut_puth = puth.find('http')
+
+            if is_absolut_puth == -1:
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/'
+                my_file += puth
+            else:
+                my_file = puth
+
+        except ProfileImage.DoesNotExist:
+            anonim = settings.MEDIA_ROOT
+            anonim += '/anonim.jpg'
+            if os.path.isfile(anonim):
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/anonim.jpg'
+            else:
+                my_file = None
+
+        return my_file
+
+
+class UserDetailSerializer(serializers.Serializer):
+    pk = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    email = serializers.CharField(required=True, allow_blank=True, max_length=250)
+    profile_image = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
+    followings_count = serializers.SerializerMethodField()
+    points_count = serializers.SerializerMethodField()
+
+    def get_followers_count(self, obj):
+        I_FOLLOWING_STATUS = 5  # User following his friend
+        followers_cnt = Relation.objects.filter(status=I_FOLLOWING_STATUS, friend_id=obj.pk).count()
+        return followers_cnt
+
+    def get_followings_count(self, obj):
+        MY_FOLLOWER_STATUS = 4  # Friend following his user
+        followings_cnt = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=obj.pk).count()
+        return followings_cnt
+
+    def get_points_count(self, obj):
+        return 0
 
     def get_profile_image(self, obj):
         try:
