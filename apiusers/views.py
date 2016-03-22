@@ -72,7 +72,7 @@ class UserDetail(APIView):
 
         serializer = UserDetailSerializer(user)
 
-        last_reports = Report.objects.filter(user_id=user.pk).order_by('-id')[0:2]
+        last_reports = Report.objects.filter(user_id=user.pk).order_by('-id')[0:3]
         res_reports_list = []
         for r in last_reports:
             last_reports_seriolaser = ReportSerializer(r).data
