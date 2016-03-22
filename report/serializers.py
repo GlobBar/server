@@ -13,9 +13,12 @@ class ReportSerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
 
     def get_thumbnail(self, obj):
-        thumbnail_path = obj.report_image.image_thumbnail.url
-        res = settings.SITE_DOMAIN
-        res += thumbnail_path
+        try:
+            thumbnail_path = obj.report_image.image_thumbnail.url
+            res = settings.SITE_DOMAIN
+            res += thumbnail_path
+        except:
+            res = None
         return res
 
     def to_representation(self, instance):
@@ -127,5 +130,6 @@ class ReportForListSerializer(serializers.ModelSerializer):
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
                   'charge', 'queue', 'type', 'report_image', 'description'
-                  , 'owner', 'thumbnail'
+                  , 'owner'
+                  , 'thumbnail'
                   )

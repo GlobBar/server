@@ -7,6 +7,9 @@ from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from report.models import Report
+from places.models import Place
+from report.serializers import ReportSerializer
 
 
 class UserList(APIView):
@@ -68,7 +71,14 @@ class UserDetail(APIView):
             user = self.get_object(pk)
 
         serializer = UserDetailSerializer(user)
-        return Response(serializer.data)
+
+        last_reports = Report.objects.filter(user_id=user.pk).order_by('-id')[0:2]
+        res_reports_list = []
+        for r in last_reports:
+            last_reports_seriolaser = ReportSerializer(r).data
+            res_reports_list += [last_reports_seriolaser]
+
+        return Response({'user': serializer.data, 'last_reports': res_reports_list})
 
     def put(self, request, pk, format=None):
         user = self.get_object(pk)
