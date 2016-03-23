@@ -7,7 +7,7 @@ class PointType(models.Model):
     title = models.CharField(max_length=100, blank=True)
     description = models.TextField(null=True, blank=True)
     enable = models.BooleanField(default=True)
-    points = models.IntegerField(null=True, blank=True)
+    points_count = models.IntegerField(null=True, blank=True)
 
 
 class Points(models.Model):
