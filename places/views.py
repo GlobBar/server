@@ -247,6 +247,7 @@ class SnippetDetail(APIView):
         place = self.get_object(pk)
         serializer_place = PlaceDetailSerializer(place, context={
             'my_check_in': my_check_in,
+            'my_check_in_entity': my_checin,
             'my_like_place_pks': my_like_place_pks
         })
 

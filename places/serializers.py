@@ -93,9 +93,32 @@ class PlaceDetailSerializer(serializers.Serializer):
 
         if obj.pk == my_check_in:
             res = True
+            try:
+                check_in_entity = self.context['my_check_in_entity']
+                expired = check_in_entity.expired
+
+            except:
+                expired = None
+
         else:
             res = False
-        return res
+            expired = None
+
+        return {'is_my': res, 'expired': expired}
+    #
+    #
+    # def get_my_check_in(self, obj):
+    #
+    #     try:
+    #         my_check_in = self.context['my_check_in']
+    #     except:
+    #         my_check_in = None
+    #
+    #     if obj.pk == my_check_in:
+    #         res = True
+    #     else:
+    #         res = False
+    #     return res
 
 class PlaceSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
