@@ -52,7 +52,7 @@ class ReportImageLikeDetail(APIView):
         # Create just one like for user in this report
         if report_like is None:
             request.data.update({'user': request.user.pk, 'report': report_pk})
-            import ipdb; ipdb.set_trace()
+            # import ipdb; ipdb.set_trace()
             serializer = ReportImageLikeSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
