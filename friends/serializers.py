@@ -20,16 +20,25 @@ class RelationSerializer(serializers.ModelSerializer):
     def get_image_link(self, obj):
         try:
             puth = str(obj.user_image)
-            is_absolut_puth = puth.find('http')
+            if puth == 'None':
+                anonim = settings.MEDIA_ROOT
+                anonim += '/anonim.jpg'
+                if os.path.isfile(anonim):
+                    my_file = settings.SITE_DOMAIN
+                    my_file += '/media/anonim.jpg'
+                else:
+                    my_file = None
 
-            if is_absolut_puth == -1:
-                my_file = settings.SITE_DOMAIN
-                my_file += '/media/'
-                my_file += puth
             else:
-                my_file = puth
+                is_absolut_puth = puth.find('http')
 
-        except :
+                if is_absolut_puth == -1:
+                    my_file = settings.SITE_DOMAIN
+                    my_file += '/media/'
+                    my_file += puth
+                else:
+                    my_file = puth
+        except:
             anonim = settings.MEDIA_ROOT
             anonim += '/anonim.jpg'
             if os.path.isfile(anonim):
@@ -38,7 +47,7 @@ class RelationSerializer(serializers.ModelSerializer):
             else:
                 my_file = None
 
-        return  my_file
+        return my_file
 
     class Meta:
         model = Relation
