@@ -23,6 +23,23 @@ class PlaceDetailSerializer(serializers.Serializer):
     like_cnt = serializers.SerializerMethodField()
     last_users = serializers.SerializerMethodField()
     my_check_in = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+
+
+    # LIKE
+    def get_is_liked(self, obj):
+
+        try:
+            my_like_place_pks = self.context['my_like_place_pks']
+        except:
+            my_like_place_pks = []
+
+        if str(obj.pk) in my_like_place_pks:
+            res = True
+        else:
+            res = False
+
+        return res
 
     def get_checkin_cnt(self, obj):
         return obj.checkin_set.filter(is_hidden=False).count()

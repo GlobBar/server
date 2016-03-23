@@ -141,6 +141,14 @@ class SnippetDetail(APIView):
         if limit_count == 'None':
             limit_count = '9'
 
+        # My likes
+        my_like_place_pks = []
+        my_likes = Like.objects.filter(user=request.user)
+        if my_likes.count() > 0:
+            for i in my_likes:
+                my_like_place_pks += [str(i.place.pk)]
+
+        # My Check ins
         my_checin = Checkin.objects.filter(user=request.user, active=True).first()
         if my_checin is None:
             my_check_in = None
@@ -237,7 +245,10 @@ class SnippetDetail(APIView):
         serializer_simple_reports = ReportForListSerializer(simple_reports, many=True)
 
         place = self.get_object(pk)
-        serializer_place = PlaceDetailSerializer(place, context={'my_check_in': my_check_in})
+        serializer_place = PlaceDetailSerializer(place, context={
+            'my_check_in': my_check_in,
+            'my_like_place_pks': my_like_place_pks
+        })
 
         return Response({
             'place': serializer_place.data
