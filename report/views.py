@@ -51,9 +51,7 @@ class ReportImageLikeDetail(APIView):
 
         # Create just one like for user in this report
         if report_like is None:
-            # request.data.update({'user': request.user.pk, 'report': report_pk})
             req_data = {'user': request.user.pk, 'report': report_pk}
-            # import ipdb; ipdb.set_trace()
             serializer = ReportImageLikeSerializer(data=req_data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
@@ -119,7 +117,7 @@ class ReportsByPeriod(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
             hot_reports = ReportRepository.getTodayReportsHot(reportRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -145,7 +143,7 @@ class ReportsByPeriod(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
             hot_reports = ReportRepository.getWeekReportsHot(reportRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -171,7 +169,7 @@ class ReportsByPeriod(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
             hot_reports = ReportRepository.getMonthReportsHot(reportRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -202,13 +200,8 @@ class ReportsByPeriod(APIView):
             hot_reports_result = serializer_hot_reports.data
         serializer_simple_reports = ReportForListSerializer(simple_reports, many=True)
 
-        # place = self.get_object(pk)
-        # serializer_place = PlaceDetailSerializer(place, context={'my_check_in': my_check_in})
-
         return Response({
-            # 'place': serializer_place.data
              'reports': hot_reports_result + serializer_simple_reports.data
-            # , 'field_for_testing(simple_pl)': serializer_simple_reports.data
         })
 
     def correctionLimitFrom(self, limit_from, hot_count):

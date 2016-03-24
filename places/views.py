@@ -181,7 +181,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getMonthReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -201,7 +201,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getWeekReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -221,7 +221,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getTodayReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True)
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)

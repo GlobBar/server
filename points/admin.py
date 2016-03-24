@@ -1,10 +1,10 @@
 from django.contrib import admin
-from points.models import Points
+from points.models import PointType
 
 
 # Register your models here.
-class PointsAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'description', 'enable', 'points_count')
+class PointTypeAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'title')
     # list_filter = ['title']
 
     fieldsets = [
@@ -18,4 +18,4 @@ class PointsAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(Points, PointsAdmin)
+admin.site.register(PointType, PointTypeAdmin)

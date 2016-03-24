@@ -11,6 +11,26 @@ class ReportSerializer(serializers.ModelSerializer):
     report_image = serializers.SerializerMethodField()
     created = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
+    like_cnt = serializers.SerializerMethodField()
+    is_hot = serializers.SerializerMethodField()
+
+    def get_is_hot(self, obj):
+        try:
+            like_cnt = obj.reportimagelike_set.count()
+            if like_cnt > 19:
+                is_hot = True
+            else:
+                is_hot = False
+        except:
+            is_hot = False
+        return is_hot
+
+    def get_like_cnt(self, obj):
+        try:
+            like_cnt = obj.reportimagelike_set.count()
+        except:
+            like_cnt = 0
+        return like_cnt
 
     def get_thumbnail(self, obj):
         try:
@@ -45,7 +65,6 @@ class ReportSerializer(serializers.ModelSerializer):
     def get_created(self, obj):
 
         if obj.created is not None:
-            # import ipdb;ipdb.set_trace()
             try:
                 res = obj.created.strftime('%Y-%m-%dT%H:%M:%SZ')
             except:
@@ -58,7 +77,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description', 'thumbnail'
+                  'charge', 'queue', 'type', 'report_image', 'description', 'thumbnail', 'like_cnt', 'is_hot'
                   )
 
     def save(self, **kwargs):
@@ -80,6 +99,23 @@ class ReportForListSerializer(serializers.ModelSerializer):
     report_image = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
+    like_cnt = serializers.SerializerMethodField()
+    is_hot = serializers.SerializerMethodField()
+
+    def get_is_hot(self, obj):
+        try:
+            is_hot = self.context['is_hot']
+        except:
+            is_hot = False
+        return is_hot
+
+    def get_like_cnt(self, obj):
+
+        try:
+            like_cnt = obj.like_cnt
+        except:
+            like_cnt = 0
+        return like_cnt
 
     def get_thumbnail(self, obj):
         res = None
@@ -87,7 +123,6 @@ class ReportForListSerializer(serializers.ModelSerializer):
         path = obj.image_from_query
         if path is not None:
             abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
-            # import ipdb;ipdb.set_trace()
             if os.path.isfile(abs_path):
                 res = settings.SITE_DOMAIN
                 res += '/media/thumbs/'
@@ -102,7 +137,6 @@ class ReportForListSerializer(serializers.ModelSerializer):
         return report
 
     def get_owner(self, obj):
-        # import ipdb;ipdb.set_trace()
 
         try:
             user = User.objects.get(pk=obj.user)
@@ -129,7 +163,4 @@ class ReportForListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description'
-                  , 'owner'
-                  , 'thumbnail'
-                  )
+                  'charge', 'queue', 'type', 'report_image', 'description', 'owner', 'thumbnail', 'like_cnt', 'is_hot')
