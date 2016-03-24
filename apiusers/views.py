@@ -10,6 +10,7 @@ from rest_framework import status
 from report.models import Report
 from places.models import Place
 from report.serializers import ReportSerializer
+from report.models import ReportImageLike
 
 
 class UserList(APIView):
@@ -72,10 +73,17 @@ class UserDetail(APIView):
 
         serializer = UserDetailSerializer(user)
 
+        # My Report likes
+        my_like_report_pks = []
+        my_likes_report = ReportImageLike.objects.filter(user=user)
+        if my_likes_report.count() > 0:
+            for l in my_likes_report:
+                my_like_report_pks += [str(l.report.pk)]
+
         last_reports = Report.objects.filter(user_id=user.pk).order_by('-id')[0:3]
         res_reports_list = []
         for r in last_reports:
-            last_reports_seriolaser = ReportSerializer(r).data
+            last_reports_seriolaser = ReportSerializer(r, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks}).data
             res_reports_list += [last_reports_seriolaser]
 
         return Response({'user': serializer.data, 'last_reports': res_reports_list})
