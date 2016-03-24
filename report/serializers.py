@@ -133,9 +133,19 @@ class ReportForListSerializer(serializers.ModelSerializer):
         return res
 
     def get_is_hot(self, obj):
+        like_cnt = 0
         try:
             is_hot = self.context['is_hot']
         except:
+            is_hot = False
+
+        if is_hot == True:
+            try:
+                like_cnt = obj.like_cnt
+            except:
+                like_cnt = 0
+
+        if like_cnt < 2:
             is_hot = False
         return is_hot
 
