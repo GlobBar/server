@@ -145,7 +145,7 @@ class ReportForListSerializer(serializers.ModelSerializer):
             except:
                 like_cnt = 0
 
-        if like_cnt < 2:
+        if like_cnt < 20:
             is_hot = False
         return is_hot
 
