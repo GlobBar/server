@@ -183,7 +183,7 @@ class PlaceRepository():
                 'LIMIT 0,3'
                 , (pk, frt)
             )
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         return hot_reports
 
     def getTodayReports(self, parameters):
