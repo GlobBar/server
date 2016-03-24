@@ -13,6 +13,21 @@ class ReportSerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
     is_hot = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+
+    def get_is_liked(self, obj):
+        try:
+            my_like_place_pks = self.context['my_like_report_pks']
+        except:
+            my_like_place_pks = []
+
+        if str(obj.pk) in my_like_place_pks:
+            res = True
+        else:
+            res = False
+
+        return res
+
 
     def get_is_hot(self, obj):
         try:
@@ -77,7 +92,8 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description', 'thumbnail', 'like_cnt', 'is_hot'
+                  'charge', 'queue', 'type', 'report_image', 'description', 'thumbnail', 'like_cnt', 'is_hot',
+                  'is_liked'
                   )
 
     def save(self, **kwargs):
@@ -101,6 +117,20 @@ class ReportForListSerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
     is_hot = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+
+    def get_is_liked(self, obj):
+        try:
+            my_like_place_pks = self.context['my_like_report_pks']
+        except:
+            my_like_place_pks = []
+
+        if str(obj.pk) in my_like_place_pks:
+            res = True
+        else:
+            res = False
+
+        return res
 
     def get_is_hot(self, obj):
         try:
@@ -163,4 +193,5 @@ class ReportForListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description', 'owner', 'thumbnail', 'like_cnt', 'is_hot')
+                  'charge', 'queue', 'type', 'report_image', 'description', 'owner', 'thumbnail', 'like_cnt', 'is_hot',
+                  'is_liked')

@@ -10,6 +10,7 @@ from city.models import City
 from city.serializers import CitySerializer
 from report.serializers import ReportForListSerializer
 from datetime import datetime
+from report.models import ReportImageLike
 import pytz
 
 
@@ -141,7 +142,14 @@ class SnippetDetail(APIView):
         if limit_count == 'None':
             limit_count = '9'
 
-        # My likes
+        # My Report likes
+        my_like_report_pks = []
+        my_likes_report = ReportImageLike.objects.filter(user=request.user)
+        if my_likes_report.count() > 0:
+            for l in my_likes_report:
+                my_like_report_pks += [str(l.report.pk)]
+
+        # My Place likes
         my_like_place_pks = []
         my_likes = Like.objects.filter(user=request.user)
         if my_likes.count() > 0:
@@ -181,7 +189,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getMonthReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -201,7 +209,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getWeekReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -221,7 +229,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getTodayReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -236,13 +244,12 @@ class SnippetDetail(APIView):
             parameters = {'tz_delta': tz_delta, 'str_pk': str_pk, 'correct_limit_from': correct_limit_from, 'correct_limit_count': correct_limit_count, 'pk': pk, 'frt': frt}
             simple_reports = PlaceRepository.getTodayReports(placeRepoinst, parameters)
 
-
         # IF limit_from > hot_count => Hot_places does not view
         if (correct_limit_from + hot_count) > hot_count:
             hot_reports_result = []
         else:
             hot_reports_result = serializer_hot_reports.data
-        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True)
+        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True, context={'my_like_report_pks': my_like_report_pks})
 
         place = self.get_object(pk)
         serializer_place = PlaceDetailSerializer(place, context={
