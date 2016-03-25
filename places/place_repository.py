@@ -70,7 +70,7 @@ class PlaceRepository():
                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
                 'GROUP BY report_report.id '
-                'HAVING (COUNT(l.id) > 20) '
+                'HAVING (COUNT(l.id) > 4) '
                 'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (pk,  frt)
@@ -107,7 +107,7 @@ class PlaceRepository():
                 'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
                 'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
                 'GROUP BY report_report.id '
-                'HAVING (COUNT(l.id) > 20) '
+                'HAVING (COUNT(l.id) > 4) '
                 'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (pk, frt, frt)
@@ -181,7 +181,7 @@ class PlaceRepository():
                 'WHERE report_report.place_id = %s AND report_report.enable = 1 '
                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
                 'GROUP BY report_report.id '
-                'HAVING (COUNT(l.id) > 20) '
+                'HAVING (COUNT(l.id) > 4) '
                 'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (pk, frt)
