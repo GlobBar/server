@@ -35,6 +35,7 @@ class ReportRepository():
                 'AND p.city_id = %s '
                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL 6 HOUR, %s) '
                 'GROUP BY report_report.id '
+                'HAVING (COUNT(l.id) > 20) '
                 'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (city_pk, frt)
@@ -116,6 +117,7 @@ class ReportRepository():
                 'AND (CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*7) HOUR, %s)) '
                 'AND (CONVERT_TZ(report_report.created,\'+00:04\', \''+tz_delta+'\') < DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*6) HOUR, %s)) '
                 'GROUP BY report_report.id '
+                'HAVING (COUNT(l.id) > 20) '
                 'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (city_pk, frt, frt)
@@ -195,6 +197,7 @@ class ReportRepository():
                 'AND p.city_id = %s '
                 'AND CONVERT_TZ(report_report.created,\'+00:00\', \''+tz_delta+'\') > DATE_FORMAT(CONVERT_TZ(UTC_TIMESTAMP(),\'+00:00\', \''+tz_delta+'\') - INTERVAL (6+24*30) HOUR, %s) '
                 'GROUP BY report_report.id '
+                'HAVING (COUNT(l.id) > 20) '
                 'ORDER BY like_cnt DESC , report_report.created  DESC '
                 'LIMIT 0,3'
                 , (city_pk,  frt)
