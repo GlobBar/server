@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from apiusers.serializers import UserSerializer, GroupSerializer, UserDetailSerializer
@@ -8,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from report.models import Report
-from places.models import Place
 from report.serializers import ReportSerializer
 from report.models import ReportImageLike
 

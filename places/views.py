@@ -12,6 +12,7 @@ from report.serializers import ReportForListSerializer
 from datetime import datetime
 from report.models import ReportImageLike
 import pytz
+from places.check_in_manager import CheckInManager
 
 
 class SnippetList(APIView):
@@ -340,7 +341,6 @@ class CheckinList(APIView):
             serializer = CheckinSerializer(data=d, context={'request': request})
             if serializer.is_valid():
                 self.clear_old_check_ins(request.user)
-
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -351,8 +351,8 @@ class CheckinList(APIView):
                 else:
                     checkin.is_hidden = False
 
-            now = datetime.now()
-            expired_time = now.replace(hour=23, minute=59, second=59, microsecond=0)
+            manager = CheckInManager()
+            expired_time = manager.get_expired_time(checkin)
 
             checkin.expired = expired_time
             checkin.created = datetime.now()

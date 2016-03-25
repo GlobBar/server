@@ -4,6 +4,9 @@ from django.conf import settings
 from django.db.models.functions import Lower
 from apiusers.serializers import LastUsersSerializer
 from datetime import date, datetime, time
+from places.check_in_manager import CheckInManager
+from pytz import timezone
+from datetime import datetime, timedelta
 
 
 class PlaceDetailSerializer(serializers.Serializer):
@@ -42,7 +45,14 @@ class PlaceDetailSerializer(serializers.Serializer):
         return res
 
     def get_checkin_cnt(self, obj):
-        return obj.checkin_set.filter(is_hidden=False).count()
+        now_utc = datetime.now(timezone('UTC'))
+        checkins_cnt = Checkin.objects.filter(
+            is_hidden=False,
+            place=obj,
+            expired__gt=now_utc,
+        ).order_by(Lower('created').desc()).count()
+
+        return checkins_cnt
 
     def get_like_cnt(self, obj):
         return obj.like_set.count()
@@ -72,13 +82,14 @@ class PlaceDetailSerializer(serializers.Serializer):
         return res
 
     def get_last_users(self, obj):
-        today_min = datetime.combine(date.today(), time.min)
-        today_max = datetime.combine(date.today(), time.max)
 
+        # Current time in UTC
+        now_utc = datetime.now(timezone('UTC'))
+        # import ipdb;ipdb.set_trace()
         last_checkins = Checkin.objects.filter(
             is_hidden=False,
             place=obj,
-            created__range=(today_min, today_max),
+            expired__gt=now_utc,
         ).order_by(Lower('created').desc())[0:10]
 
         serializer = LastUsersSerializer(last_checkins, many=True)
@@ -210,15 +221,26 @@ class PlaceSerializer(serializers.Serializer):
         return res
 
     def get_last_users(self, obj):
-        today_min = datetime.combine(date.today(), time.min)
-        today_max = datetime.combine(date.today(), time.max)
+        # today_min = datetime.combine(date.today(), time.min)
+        # today_max = datetime.combine(date.today(), time.max)
+        #
+        # last_checkins = Checkin.objects.filter(
+        #     is_hidden=False,
+        #     place=obj,
+        #     created__range=(today_min, today_max),
+        # ).order_by(Lower('created').desc())[0:10]
 
+        # Current time in UTC
+        now_utc = datetime.now(timezone('UTC'))
+        # import ipdb;ipdb.set_trace()
         last_checkins = Checkin.objects.filter(
             is_hidden=False,
             place=obj,
-            created__range=(today_min, today_max),
+            expired__gt=now_utc,
         ).order_by(Lower('created').desc())[0:10]
+
         serializer = LastUsersSerializer(last_checkins, many=True)
+
         return serializer.data
 
     def create(self, validated_data):
@@ -247,13 +269,41 @@ class PlaceSerializer(serializers.Serializer):
         return distance
 
     def get_checkin_cnt(self, obj):
-        return obj.checkin_set.filter(is_hidden=False).count()
+        now_utc = datetime.now(timezone('UTC'))
+        checkins_cnt = Checkin.objects.filter(
+            is_hidden=False,
+            place=obj,
+            expired__gt=now_utc,
+        ).order_by(Lower('created').desc()).count()
+
+        return checkins_cnt
 
     def get_like_cnt(self, obj):
         return obj.like_set.count()
 
 
 class CheckinSerializer(serializers.ModelSerializer):
+
+    expired = serializers.SerializerMethodField()
+
+    def get_expired(self, obj):
+
+        if obj.expired is not None:
+            try:
+                res = obj.expired.strftime('%Y-%m-%dT%H:%M:%SZ')
+            except:
+                res = None
+        else:
+            res = None
+        return res
+
+
+    def save(self, **kwargs):
+        check_in = super(CheckinSerializer, self).save(**kwargs)
+        check_in_manager = CheckInManager()
+        check_in.expired = check_in_manager.get_expired_time(check_in)
+
+        return check_in.save()
 
     class Meta:
         model = Checkin
