@@ -94,7 +94,7 @@ class FollowerList(APIView):
                 'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
                 'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
 
-                'WHERE friends_relation.status IN( '+str(self.I_FOLLOWING_STATUS)+' ) '
+                'WHERE friends_relation.status IN( '+str(self.MY_FOLLOWER_STATUS)+' ) '
                 'AND friends_relation.friend_id = '+str(request.user.pk)+' '
 
                 'ORDER BY auth_user.username ASC '
@@ -136,7 +136,7 @@ class FollowingsList(APIView):
                 'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
                 'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
 
-                'WHERE friends_relation.status IN( '+str(self.MY_FOLLOWER_STATUS)+' ) '
+                'WHERE friends_relation.status IN( '+str(self.I_FOLLOWING_STATUS)+' ) '
                 'AND friends_relation.friend_id = '+str(request.user.pk)+' '
 
                 'ORDER BY auth_user.username ASC '
