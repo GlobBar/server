@@ -15,12 +15,12 @@ class Place(models.Model):
     address = models.CharField(max_length=250, blank=True, default='')
     description = models.TextField()
     enable = models.BooleanField(default=True)
+    is_partner = models.BooleanField(default=False)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=True, null=True)
     image = models.FileField(upload_to='place/%Y/%m/%d', blank=True, null=True)
     logo = models.FileField(upload_to='place_logo/%Y/%m/%d', blank=True, null=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
-
 
     class Meta:
         ordering = ('id', )
@@ -37,7 +37,6 @@ class Checkin(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
     is_hidden = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
-
 
     class Meta:
         ordering = ('id', )

@@ -3,16 +3,28 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
+# Type of points and count of balls
 class PointType(models.Model):
     title = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=True)
     description = models.TextField(null=True, blank=True)
     enable = models.BooleanField(default=True)
     points_count = models.IntegerField(null=True, blank=True)
+    points_count_partner = models.IntegerField(null=True, blank=True)
 
 
+# Points history
 class Points(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     enable = models.BooleanField(default=True)
     points = models.IntegerField(null=True, blank=True)
     type = models.ForeignKey(PointType, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+
+# Points count by users
+class PointsCount(models.Model):
+    updated = models.DateTimeField(auto_now_add=True)
+    enable = models.BooleanField(default=True)
+    points = models.IntegerField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)

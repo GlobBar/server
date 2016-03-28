@@ -13,6 +13,7 @@ from datetime import datetime
 from report.models import ReportImageLike
 import pytz
 from places.check_in_manager import CheckInManager
+from points.points_manager import PointManager
 
 
 class SnippetList(APIView):
@@ -334,14 +335,22 @@ class CheckinList(APIView):
         except Place.DoesNotExist:
             return Response({'error': 'Invalid place_pk'}, status=status.HTTP_400_BAD_REQUEST)
 
-        checkin = Checkin.objects.filter(user=request.user, place=place).first()
+        # Add points
+        data = {
+                    'user': request.user,
+                    'place': place,
+                }
+        point_manager = PointManager()
+        point_manager.add_point_by_type('check-in', data)
 
+        checkin = Checkin.objects.filter(user=request.user, place=place).first()
         if checkin is None:
             d = {'user': request.user.pk, 'place': request.POST.get('place_pk'), 'is_hidden': request.POST.get('is_hidden')}
             serializer = CheckinSerializer(data=d, context={'request': request})
             if serializer.is_valid():
                 self.clear_old_check_ins(request.user)
                 serializer.save()
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             if 'is_hidden' in request.POST:
