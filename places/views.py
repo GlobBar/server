@@ -335,13 +335,12 @@ class CheckinList(APIView):
         except Place.DoesNotExist:
             return Response({'error': 'Invalid place_pk'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Add points
+        # data for Add points
         data = {
                     'user': request.user,
                     'place': place,
                 }
         point_manager = PointManager()
-        point_manager.add_point_by_type('check-in', data)
 
         checkin = Checkin.objects.filter(user=request.user, place=place).first()
         if checkin is None:
@@ -350,6 +349,9 @@ class CheckinList(APIView):
             if serializer.is_valid():
                 self.clear_old_check_ins(request.user)
                 serializer.save()
+
+                #  Add points
+                point_manager.add_point_by_type('check-in', data)
 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
