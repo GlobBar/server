@@ -6,6 +6,7 @@ from notification.models import DevToken
 from rest_framework import status
 from pushy.models import Device
 from pushy.utils import send_push_notification
+from django.conf import settings
 
 
 class NotificationList(APIView):
@@ -54,7 +55,8 @@ class NotificationList(APIView):
              'test_data': {'foo': 'bar'},
              }
 
-        theCertfile = '/var/www/html/nightlife/notification/test.pem'
+        # theCertfile = '/var/www/html/nightlife/notification/test.pem'
+        theCertfile = settings.PEM_KEY_DIR
 
         theHost = ( 'gateway.sandbox.push.apple.com', 2195 )
 
