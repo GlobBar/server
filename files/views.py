@@ -89,6 +89,23 @@ class ReportFileUploadView(APIView):
         serializer = ReportSerializer(report, many=False)
         return Response(serializer.data)
 
+    # Update report (image and video)
+    def put(self, request, format = None):
+        description = request.POST.get('description')
+        current_user = request.user
+        try:
+            report = Report.objects.get(pk=request.POST.get('report_pk'))
+            report_owner = report.user
+        except Report.DoesNotExist:
+            return Response({'data': 'Invalid pk, report not found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if description != 'None' and current_user.pk == report_owner.pk:
+            report.description = description
+            report.save()
+
+        serializer = ReportSerializer(report, many=False)
+        return Response(serializer.data)
+
 
 class ConvertTokenViewCustom(ConvertTokenView):
     def post(self, request, *args, **kwargs):

@@ -62,6 +62,10 @@ class UserDetailSerializer(serializers.Serializer):
     followers_count = serializers.SerializerMethodField()
     followings_count = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
+
+    def get_points_count(self, obj):
+        return 0
+
     # last_reports = serializers.SerializerMethodField()
     #
     # def get_last_reports(self, obj):
@@ -78,9 +82,6 @@ class UserDetailSerializer(serializers.Serializer):
         MY_FOLLOWER_STATUS = 4  # Friend following his user
         followings_cnt = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=obj.pk).count()
         return followings_cnt
-
-    def get_points_count(self, obj):
-        return 0
 
     def get_profile_image(self, obj):
         try:
