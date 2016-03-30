@@ -16,30 +16,12 @@ class NotificationList(APIView):
         user = request.user
         dev_token_str = request.POST.get('dev_token')
 
-
-        Device.objects.create(key=dev_token_str, type=Device.DEVICE_TYPE_IOS, user=user)
-
-
-
-
-        # if dev_token_str is None:
-        #     return Response({'data': 'Invalid dev_token.'}, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # try:
-        #     dev_token = DevToken.objects.get(user=user)
-        #     dev_token.dev_token = dev_token_str
-        # except DevToken.DoesNotExist:
-        #     dev_token = DevToken(
-        #         user=user,
-        #         dev_token=dev_token_str,
-        #     )
-        #
-        # dev_token.save()
-
-
-
-
-
+        try:
+            exist_device = Device.objects.get(user=user)
+            exist_device.key = dev_token_str
+            exist_device.save()
+        except Device.DoesNotExist:
+            Device.objects.create(key=dev_token_str, type=Device.DEVICE_TYPE_IOS, user=user)
 
         return Response({'data': 'Token was successfully added.'})
 
@@ -55,7 +37,45 @@ class NotificationList(APIView):
 
     def put(self, request, format=None):
         user = request.user
+
         device = Device.objects.get(user=user)
-        send_push_notification('YOUR TITLE', {'msg': 'test'}, device=device)
+
+        import socket, ssl, json, struct
+        import binascii
+
+        deviceToken = str(device.key)
+
+        thePayLoad = {
+             'aps': {
+                  'alert': 'Hello world Taranka :)',
+                  'sound': 'bingbong.aiff',
+                  'badge': 42
+                  },
+             'test_data': {'foo': 'bar'},
+             }
+
+        theCertfile = '/var/www/html/nightlife/notification/test.pem'
+
+        theHost = ( 'gateway.sandbox.push.apple.com', 2195 )
+
+        data = json.dumps( thePayLoad )
+
+        deviceToken = deviceToken.replace(' ','')
+
+        byteToken = binascii.unhexlify(deviceToken)
+
+        theFormat = '!BH32sH%ds' % len(data)
+
+        theNotification = struct.pack( theFormat, 0, 32,
+
+        byteToken, len(data), data )
+
+        ssl_sock = ssl.wrap_socket( socket.socket( socket.AF_INET, socket.SOCK_STREAM ), certfile = theCertfile )
+
+        ssl_sock.connect( theHost )
+
+        ssl_sock.write( theNotification )
+
+        ssl_sock.close()
 
         return Response({'data': 'Token was successfully SEND.'})
