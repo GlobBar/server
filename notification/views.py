@@ -10,6 +10,8 @@ class NotificationList(APIView):
 
     def post(self, request, format=None):
 
+
+
         return Response({'data': 'Successfully add token'})
 
     def delete(self, request, format=None):

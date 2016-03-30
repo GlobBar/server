@@ -62,19 +62,13 @@ class UserDetailSerializer(serializers.Serializer):
     followers_count = serializers.SerializerMethodField()
     followings_count = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
-    # last_reports = serializers.SerializerMethodField()
-    #
-    # def get_last_reports(self, obj):
-    #     last_reports = Report.objects.filter(user_id=obj.pk, friend_id=obj.pk).order_by('-id')[0:3]
-    #     report_seriolaser = ReportForListSerializer(last_reports, many=True)
-    #     return report_seriolaser
 
-    def get_followers_count(self, obj):
+    def get_followings_count(self, obj):
         I_FOLLOWING_STATUS = 5  # User following his friend
         followers_cnt = Relation.objects.filter(status=I_FOLLOWING_STATUS, friend_id=obj.pk).count()
         return followers_cnt
 
-    def get_followings_count(self, obj):
+    def get_followers_count(self, obj):
         MY_FOLLOWER_STATUS = 4  # Friend following his user
         followings_cnt = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=obj.pk).count()
         return followings_cnt
