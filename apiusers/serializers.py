@@ -5,6 +5,7 @@ from files.models import ProfileImage
 from django.conf import settings
 import os
 from friends.models import Relation
+from points.models import PointsCount
 
 
 class UserSerializer(serializers.Serializer):
@@ -12,6 +13,17 @@ class UserSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, allow_blank=True, max_length=100)
     email = serializers.CharField(required=True, allow_blank=True, max_length=250)
     profile_image = serializers.SerializerMethodField()
+    points_count = serializers.SerializerMethodField()
+
+    def get_points_count(self, obj):
+        try:
+            point_count = PointsCount.objects.get(user=obj)
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, user=obj)
+            point_count.save()
+
+        exist_points = point_count.points
+        return exist_points
 
     def create(self, validated_data):
         """
@@ -63,6 +75,25 @@ class UserDetailSerializer(serializers.Serializer):
     followings_count = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
 
+
+    def get_points_count(self, obj):
+        try:
+            point_count = PointsCount.objects.get(user=obj)
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, user=obj)
+            point_count.save()
+
+        exist_points = point_count.points
+        return exist_points
+
+    # last_reports = serializers.SerializerMethodField()
+    #
+    # def get_last_reports(self, obj):
+    #     last_reports = Report.objects.filter(user_id=obj.pk, friend_id=obj.pk).order_by('-id')[0:3]
+    #     report_seriolaser = ReportForListSerializer(last_reports, many=True)
+    #     return report_seriolaser
+
+
     def get_followings_count(self, obj):
         I_FOLLOWING_STATUS = 5  # User following his friend
         followers_cnt = Relation.objects.filter(status=I_FOLLOWING_STATUS, friend_id=obj.pk).count()
@@ -72,9 +103,6 @@ class UserDetailSerializer(serializers.Serializer):
         MY_FOLLOWER_STATUS = 4  # Friend following his user
         followings_cnt = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=obj.pk).count()
         return followings_cnt
-
-    def get_points_count(self, obj):
-        return 0
 
     def get_profile_image(self, obj):
         try:
