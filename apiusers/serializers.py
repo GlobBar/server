@@ -5,6 +5,7 @@ from files.models import ProfileImage
 from django.conf import settings
 import os
 from friends.models import Relation
+from points.models import PointsCount
 
 
 class UserSerializer(serializers.Serializer):
@@ -12,6 +13,17 @@ class UserSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, allow_blank=True, max_length=100)
     email = serializers.CharField(required=True, allow_blank=True, max_length=250)
     profile_image = serializers.SerializerMethodField()
+    points_count = serializers.SerializerMethodField()
+
+    def get_points_count(self, obj):
+        try:
+            point_count = PointsCount.objects.get(user=obj)
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, user=obj)
+            point_count.save()
+
+        exist_points = point_count.points
+        return exist_points
 
     def create(self, validated_data):
         """
@@ -64,7 +76,14 @@ class UserDetailSerializer(serializers.Serializer):
     points_count = serializers.SerializerMethodField()
 
     def get_points_count(self, obj):
-        return 0
+        try:
+            point_count = PointsCount.objects.get(user=obj)
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, user=obj)
+            point_count.save()
+
+        exist_points = point_count.points
+        return exist_points
 
     # last_reports = serializers.SerializerMethodField()
     #

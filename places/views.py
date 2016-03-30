@@ -9,11 +9,12 @@ from rest_framework import permissions
 from city.models import City
 from city.serializers import CitySerializer
 from report.serializers import ReportForListSerializer
-from datetime import datetime
 from report.models import ReportImageLike
 import pytz
 from places.check_in_manager import CheckInManager
 from points.points_manager import PointManager
+from pytz import timezone
+from datetime import datetime
 
 
 class SnippetList(APIView):
@@ -329,6 +330,8 @@ class CheckinList(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
+        # Current time in UTC
+        now_utc = datetime.now(timezone('UTC'))
 
         try:
             place = Place.objects.get(pk=request.POST.get('place_pk'))
@@ -361,6 +364,11 @@ class CheckinList(APIView):
                     checkin.is_hidden = True
                 else:
                     checkin.is_hidden = False
+
+            #  Add points
+            if now_utc > checkin.expired:
+                point_manager.add_point_by_type('check-in', data)
+
 
             manager = CheckInManager()
             expired_time = manager.get_expired_time(checkin)
