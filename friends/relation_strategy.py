@@ -1,4 +1,6 @@
 from friends.models import Relation
+from pushy.models import Device
+from notification.notification_manager import NotificationManager
 
 
 class RelationAbstract:
@@ -39,7 +41,33 @@ class RequestRelation(RelationAbstract):
     def create_relation(self, user, friend):
         status = self.SEND_REQUEST_STATUS
         revers_status = self.GET_REQUEST_STATUS
-        return self.create_relation_base(user, friend, status, revers_status)
+        res = self.create_relation_base(user, friend, status, revers_status)
+
+        # Check requests count. If count >= 5 send push notify
+        try:
+            device = Device.objects.get(user=user)
+        except Device.DoesNotExist:
+            return res
+        requsts = self.check_requsts(user)
+        if requsts.count() > 4:
+            # Get notification strategy
+            notification_sender = NotificationManager().get_notification_strategy(device)
+            # Send message
+            notification_sender.set_device_token(device.key).set_title('New Requests').set_data({'test': 'userInfo'})\
+                .send_message()
+
+            # Sign relations as pushed
+            for rel in requsts:
+                rel.is_pushed = True
+                rel.save()
+
+        return res
+
+    def check_requsts(self, user):
+        MY_REQUESTS_STATUS = 3
+
+        requests = Relation.objects.filter(status=MY_REQUESTS_STATUS, friend_id=user.pk)
+        return requests
 
 
 class FollowingRelation(RelationAbstract):

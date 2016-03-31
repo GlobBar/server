@@ -7,5 +7,6 @@ class Relation(models.Model):
     user = models.IntegerField(null=True, blank=True)
     friend = models.ForeignKey(User,  null=True, blank=True)
     status = models.IntegerField(null=True, blank=True)
+    is_pushed = models.BooleanField(default=False)
 
 
