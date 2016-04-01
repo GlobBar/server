@@ -27,9 +27,9 @@ class NotificationList(APIView):
     def delete(self, request, format=None):
         user = request.user
         try:
-            dev_token = DevToken.objects.get(user=user)
+            dev_token = Device.objects.get(user=user)
             dev_token.delete()
-        except DevToken.DoesNotExist:
+        except Device.DoesNotExist:
             return Response({'data': 'Can\'t remove dev_token.'}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'data': 'Token was successfully deleted.'})
