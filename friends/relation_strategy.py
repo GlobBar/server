@@ -45,10 +45,12 @@ class RequestRelation(RelationAbstract):
 
         # Check requests count. If count >= 5 send push notify
         try:
-            device = Device.objects.get(user=user)
+            device = Device.objects.get(user=friend)
         except Device.DoesNotExist:
             return res
+
         requsts = self.check_requsts(user)
+        # import ipdb; ipdb.set_trace()
         if requsts.count() > 0:
             # Get notification strategy
             notification_sender = NotificationManager().get_notification_strategy(device)

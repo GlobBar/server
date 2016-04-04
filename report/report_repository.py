@@ -1,5 +1,7 @@
 from places.models import Place
-
+from report.models import Report
+from pytz import timezone
+from datetime import datetime
 
 class ReportRepository():
 
@@ -247,8 +249,18 @@ class ReportRepository():
         return simple_reports
 
     def get_today_reports_cnt(self, place):
-        cnt = 0
 
+
+
+
+        cnt = 0
+        try:
+            # Current time in UTC
+            now_utc = datetime.now(timezone('UTC'))
+            reports_cnt = Report.objects.filter(place=place, expired__gt=now_utc)
+            cnt = reports_cnt.count()
+        except:
+            pass
 
         return cnt
 

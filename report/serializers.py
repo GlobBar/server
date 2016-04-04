@@ -6,6 +6,7 @@ from apiusers.serializers import OwnerSerializer
 from files.models import  ReportImage
 from report.report_manager import ReportManager
 import os
+from notification.notification_manager import NotificationManager
 
 class ReportSerializer(serializers.ModelSerializer):
 
@@ -105,6 +106,11 @@ class ReportSerializer(serializers.ModelSerializer):
         report_manager = ReportManager()
         expired_utc = report_manager.get_expired_time(report)
         report.expired = expired_utc
+
+        report.save()
+        # Send notifications if it is HOT
+        notification_manager = NotificationManager()
+        notification_manager.send_hot_plases_notify(report)
 
         return report.save()
 

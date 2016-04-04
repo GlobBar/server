@@ -32,7 +32,7 @@ class NotificationManager:
         # If push have not sent today yet
         if now_utc > place.last_push_expired:
             today_reports_cnt = report_repository.get_today_reports_cnt(place)
-
+            import ipdb; ipdb.set_trace()
             # If place is HOT
             if today_reports_cnt > 0:
                 likes = Like.objects.filter(place=place)[0:100]  # TODO create Cron task to send notifications queue
@@ -67,7 +67,7 @@ class NotificationManager:
             # Followers
 
             followers = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=check_in.user.pk)
-            import ipdb; ipdb.set_trace()
+            # import ipdb; ipdb.set_trace()
             for follower in followers:
                 try:
                     device = Device.objects.get(user=follower.user)
