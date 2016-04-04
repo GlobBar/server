@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from apiusers.serializers import OwnerSerializer
 from files.models import  ReportImage
+from report.report_manager import ReportManager
 import os
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -99,6 +100,11 @@ class ReportSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         report = super(ReportSerializer, self).save(**kwargs)
         report.user = self.context['request'].user
+
+        # Set expired date
+        report_manager = ReportManager()
+        expired_utc = report_manager.get_expired_time(report)
+        report.expired = expired_utc
 
         return report.save()
 

@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 
 class Report(models.Model):
     created = models.DateTimeField(auto_now_add=True)
+    expired = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True, blank=True)
     enable = models.BooleanField(default=True)
     is_going = models.NullBooleanField(null=True, blank=True)

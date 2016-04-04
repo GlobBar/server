@@ -53,8 +53,7 @@ class RequestRelation(RelationAbstract):
             # Get notification strategy
             notification_sender = NotificationManager().get_notification_strategy(device)
             # Send message
-            notification_sender.set_device_token(device.key).set_title('New Requests').set_data({'test': 'userInfo'})\
-                .send_message()
+            notification_sender.set_device_token(device.key).set_title('New Requests').set_data({'type': 1}).send_message()
 
             # Sign relations as pushed
             for rel in requsts:
@@ -66,7 +65,7 @@ class RequestRelation(RelationAbstract):
     def check_requsts(self, user):
         MY_REQUESTS_STATUS = 3
 
-        requests = Relation.objects.filter(status=MY_REQUESTS_STATUS, friend_id=user.pk)
+        requests = Relation.objects.filter(status=MY_REQUESTS_STATUS, friend_id=user.pk, is_pushed=False)
         return requests
 
 

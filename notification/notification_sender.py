@@ -20,11 +20,20 @@ class AbstractSender:
     def set_device_token(self, token): pass
 
 
+
+
 # iOS
 class IosSender(AbstractSender):
     notify_data = {'foo': 'bar'}
     device_token = ''
     notify_title = 'New notification'
+    instance = None
+
+    def get_instance(self):
+        if self.instance is None:
+            return IosSender()
+        else:
+            return self.instance
 
     def set_title(self, title):
         self.notify_title = title
@@ -74,6 +83,13 @@ class AndroidSender(AbstractSender):
     notify_data = {'foo': 'bar'}
     device_token = ''
     notify_title = 'New notification'
+    instance = None
+
+    def get_instance(self):
+        if self.instance is None:
+            return IosSender()
+        else:
+            return self.instance
 
     def set_title(self, title):
         self.notify_title = title

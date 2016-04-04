@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 class Place(models.Model):
     created = models.DateTimeField(auto_now_add=True)
+    last_push_expired = models.DateTimeField(auto_now_add=True)
     created_lst_rpt = models.DateTimeField(blank=True, null=True)
     title = models.CharField(max_length=100, blank=True, default='')
     opening_hours = models.CharField(max_length=100, blank=True, default='')

@@ -14,7 +14,9 @@ import json
 import requests
 from report.models import Report
 from report.serializers import ReportSerializer
+from report.report_manager import ReportManager
 from places.models import Place
+from notification.notification_manager import NotificationManager
 
 
 class FileUploadView(APIView):
@@ -85,7 +87,19 @@ class ReportFileUploadView(APIView):
         )
         report.save()
 
+        # Set expired date
+        report_manager = ReportManager()
+        expired_utc = report_manager.get_expired_time(report)
+        report.expired = expired_utc
+
+        report.save()
+
+        # Send notifications if it is HOT
+        notification_manager = NotificationManager()
+        notification_manager.send_hot_plases_notify(report)
+
         serializer = ReportSerializer(report, many=False)
+
         return Response(serializer.data)
 
     # Update report (image and video)
@@ -117,7 +131,6 @@ class ConvertTokenViewCustom(ConvertTokenView):
             profile_picture_url = 'anonim.jpg'
         else:
             profile_picture_url = None
-
 
         try:
             acc_token = json.loads(res.content)['access_token']

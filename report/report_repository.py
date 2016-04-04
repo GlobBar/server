@@ -246,3 +246,9 @@ class ReportRepository():
             )
         return simple_reports
 
+    def get_today_reports_cnt(self, place):
+        cnt = 0
+
+
+        return cnt
+

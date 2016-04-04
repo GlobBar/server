@@ -13,6 +13,7 @@ from report.models import ReportImageLike
 import pytz
 from places.check_in_manager import CheckInManager
 from points.points_manager import PointManager
+from notification.notification_manager import NotificationManager
 from pytz import timezone
 from datetime import datetime
 
@@ -344,6 +345,7 @@ class CheckinList(APIView):
                     'place': place,
                 }
         point_manager = PointManager()
+        notify_manager = NotificationManager()
 
         checkin = Checkin.objects.filter(user=request.user, place=place).first()
         if checkin is None:
@@ -355,6 +357,11 @@ class CheckinList(APIView):
 
                 #  Add points
                 point_manager.add_point_by_type('check-in', data)
+
+                # Send notifications
+                # import ipdb;ipdb.set_trace()
+                check_in = Checkin.objects.get(pk=serializer.data['pk'])
+                notify_manager.send_check_in_notify(check_in)
 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -368,6 +375,9 @@ class CheckinList(APIView):
             #  Add points
             if now_utc > checkin.expired:
                 point_manager.add_point_by_type('check-in', data)
+
+                # Send notifications
+                notify_manager.send_check_in_notify(checkin)
 
 
             manager = CheckInManager()
