@@ -49,7 +49,7 @@ class RequestRelation(RelationAbstract):
         except Device.DoesNotExist:
             return res
         requsts = self.check_requsts(user)
-        if requsts.count() > 4:
+        if requsts.count() > 0:
             # Get notification strategy
             notification_sender = NotificationManager().get_notification_strategy(device)
             # Send message

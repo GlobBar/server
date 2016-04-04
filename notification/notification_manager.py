@@ -22,6 +22,7 @@ class NotificationManager:
 
         return notification_strategy
 
+    # Your saved venue is HOT
     def send_hot_plases_notify(self, report):
         place = report.place
         report_repository = ReportRepository()
@@ -33,7 +34,7 @@ class NotificationManager:
             today_reports_cnt = report_repository.get_today_reports_cnt(place)
 
             # If place is HOT
-            if today_reports_cnt > 9:
+            if today_reports_cnt > 0:
                 likes = Like.objects.filter(place=place)[0:100]  # TODO create Cron task to send notifications queue
                 notification_manager = NotificationManager()
 
