@@ -64,12 +64,14 @@ class IosSender(AbstractSender):
              }
 
         theCertfile = settings.PEM_KEY_DIR
-        theHost = ('gateway.sandbox.push.apple.com', 2195)
+        ssl_host = settings.SSL_HOST
+        theHost = (ssl_host, 2195)
         data = json.dumps(thePayLoad)
         deviceToken = deviceToken.replace(' ','')
         byteToken = binascii.unhexlify(deviceToken)
         theFormat = '!BH32sH%ds' % len(data)
         theNotification = struct.pack(theFormat, 0, 32, byteToken, len(data), data)
+        # import ipdb;ipdb.set_trace()
         ssl_sock = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), certfile=theCertfile)
         ssl_sock.connect(theHost)
         ssl_sock.write(theNotification)
