@@ -23,8 +23,19 @@ class FileUploadView(APIView):
     parser_classes = (MultiPartParser,)
 
     def post(self, request, format=None):
-        file_obj = request.data['file']
+        try:
+            file_obj = request.data['file']
+        except:
+            file_obj = None
+
+        try:
+            user_name = request.data['user_name']
+        except:
+            user_name = None
+
+        # import ipdb;ipdb.set_trace()
         user_pk = request.data['user_pk']
+
 
         try:
             user = User.objects.get(id=user_pk)
@@ -34,19 +45,27 @@ class FileUploadView(APIView):
         try:
             profileimage = ProfileImage.objects.get(owner=user)
 
-            # remove old file
-            import os.path
-            myfile = settings.MEDIA_ROOT
-            myfile += '/'
-            myfile += str(profileimage.image)
+            if file_obj is not None:
+                # remove old file
+                import os.path
+                myfile = settings.MEDIA_ROOT
+                myfile += '/'
+                myfile += str(profileimage.image)
 
-            if os.path.isfile(myfile):
-                os.remove(myfile)
+                if os.path.isfile(myfile):
+                    os.remove(myfile)
+                profileimage.image = file_obj
 
-            profileimage.image = file_obj
+            if user_name is not None:
+                user.username = user_name
+                user.save()
 
         except ProfileImage.DoesNotExist:
             profileimage = ProfileImage(image=file_obj, owner=user, )
+            if user_name is not None:
+                user.username = user_name
+                user.save()
+
 
         profileimage.save()
         self.id = profileimage.id
