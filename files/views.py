@@ -40,7 +40,8 @@ class FileUploadView(APIView):
 
 
         try:
-            user = User.objects.get(id=user_pk)
+            # user = User.objects.get(id=user_pk)
+            user = request.user
         except User.DoesNotExist:
             return Response({'pk': ('Invalid pk')}, status=status.HTTP_400_BAD_REQUEST)
 
