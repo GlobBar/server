@@ -35,7 +35,7 @@ class FileUploadView(APIView):
         except:
             user_name = None
 
-        # import ipdb;ipdb.set_trace()
+
         user_pk = request.data['user_pk']
 
 
@@ -60,7 +60,10 @@ class FileUploadView(APIView):
                     os.remove(myfile)
                 profileimage.image = file_obj
 
-            if user_name == user.username:
+            # Check name duplication
+            users_same_name = User.objects.filter(username=user_name).exclude(pk=user.pk)
+            # import ipdb;ipdb.set_trace()
+            if users_same_name.count() > 0:
                 is_dublicate_name = True
 
             if user_name is not None and is_dublicate_name is False:
