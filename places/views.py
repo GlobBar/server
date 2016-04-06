@@ -141,7 +141,7 @@ class NearestSnippetList(APIView):
         if limitFrom == 'None':
             limitFrom = '0'
         if limitCount == 'None':
-            limitCount = '2'
+            limitCount = '10'
 
         if latitude == 'None':
             return Response({'error': ('Invalid or missing perameter latitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
