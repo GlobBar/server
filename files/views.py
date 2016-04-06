@@ -114,7 +114,7 @@ class ReportFileUploadView(APIView):
 
         report = Report(
             description=description,
-            type=1,  # (0 - report, 1 - picture)
+            type=1,  # (0 - report, 1 - picture, 2 - video)
             user=user,
             place=place,
             report_image=report_image
@@ -152,6 +152,73 @@ class ReportFileUploadView(APIView):
 
         serializer = ReportSerializer(report, many=False)
         return Response(serializer.data)
+
+
+
+class ReportVideoUploadView(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, format=None):
+        file_obj = request.data['file']
+        place_pk = request.data['place_pk']
+
+        try:
+           description = request.data['description']
+        except:
+           description = None
+        user = request.user
+
+        try:
+            place = Place.objects.get(id=place_pk)
+        except Place.DoesNotExist:
+            return Response({'pk': ('Invalid pk')}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        # GET THUMBNAIL FROM VIDEO
+
+        # import av
+        # container = av.open('/path/to/video.mp4')
+        #
+        # for packet in container.demux():
+        #     for frame in packet.decode():
+        #         if frame.type == 'video':
+        #             frame.to_image().save('/path/to/frame-%04d.jpg' % frame.index)
+
+
+
+        report_image = ReportImage(
+            # image=file_obj,
+            owner=user,
+        )
+
+        report_image.save()
+        self.id = report_image.id
+
+        report = Report(
+            description=description,
+            type=2,  # (0 - report, 1 - picture, 2 - video)
+            user=user,
+            place=place,
+            report_image=report_image
+        )
+        report.save()
+
+        # Set expired date
+        report_manager = ReportManager()
+        expired_utc = report_manager.get_expired_time(report)
+        report.expired = expired_utc
+
+        report.save()
+
+        # Send notifications if it is HOT
+        notification_manager = NotificationManager()
+        notification_manager.send_hot_plases_notify(report)
+
+        serializer = ReportSerializer(report, many=False)
+
+        return Response(serializer.data)
+
+
 
 
 class ConvertTokenViewCustom(ConvertTokenView):
