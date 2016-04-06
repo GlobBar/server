@@ -23,6 +23,8 @@ class FileUploadView(APIView):
     parser_classes = (MultiPartParser,)
 
     def post(self, request, format=None):
+        is_dublicate_name = False
+
         try:
             file_obj = request.data['file']
         except:
@@ -42,6 +44,8 @@ class FileUploadView(APIView):
         except User.DoesNotExist:
             return Response({'pk': ('Invalid pk')}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
         try:
             profileimage = ProfileImage.objects.get(owner=user)
 
@@ -56,7 +60,10 @@ class FileUploadView(APIView):
                     os.remove(myfile)
                 profileimage.image = file_obj
 
-            if user_name is not None:
+            if user_name == user.username:
+                is_dublicate_name = True
+
+            if user_name is not None and is_dublicate_name is False:
                 user.username = user_name
                 user.save()
 
@@ -71,6 +78,10 @@ class FileUploadView(APIView):
         self.id = profileimage.id
 
         serializer = UserSerializer(user, many=False)
+
+        if is_dublicate_name is True:
+            return Response({'data': 'Name duplication'}, status=status.HTTP_200_OK)
+
         return Response(serializer.data)
 
 
