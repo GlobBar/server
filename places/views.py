@@ -127,6 +127,61 @@ class SnippetList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class NearestSnippetList(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+        limitFrom = str(request.GET.get('limit_from'))
+        limitCount = str(request.GET.get('limit_count'))
+
+        latitude = str(request.GET.get('latitude'))
+        longitude = str(request.GET.get('longitude'))
+
+        if limitFrom == 'None':
+            limitFrom = '0'
+        if limitCount == 'None':
+            limitCount = '2'
+
+        if latitude == 'None':
+            return Response({'error': ('Invalid or missing perameter latitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
+        if longitude == 'None':
+            return Response({'error': ('Invalid or missing perameter longitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
+
+        places = Place.objects.raw(
+            'SELECT '
+                'places_place.id , '
+                'places_place.city_id , '
+                'places_place.title, '
+                'places_place.address, '
+                'places_place.description, '
+                'places_place.enable, '
+                'places_place.created, '
+                'places_place.created_lst_rpt, '
+                'places_place.latitude, '
+                'places_place.longitude, '
+                'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 2) '
+                'AS distance '
+
+            'FROM places_place '
+            'ORDER BY distance ASC '
+            'LIMIT '+limitFrom+', '+limitCount+''
+        )
+
+        serializer = PlaceSerializer(places, many=True, context={})
+        data = {'places': serializer.data}
+        return Response(data)
+
+    def post(self, request, format=None):
+        serializer = PlaceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class SnippetDetail(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
