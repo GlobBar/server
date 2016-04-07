@@ -24,6 +24,7 @@ from files.views import ConvertTokenViewCustom
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('places.urls')),
+    url(r'^', include('user_messages.urls')),
     url(r'^', include('notification.urls')),
     url(r'^', include('points.urls')),
     url(r'^', include('report.urls')),
