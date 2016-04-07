@@ -275,3 +275,51 @@ class ConvertTokenViewCustom(ConvertTokenView):
             profileimage.save()
 
         return res
+
+
+"""""""""
+VIDEO
+"""""""""
+
+class ReportVideoRangeView(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def get(self, request, format=None):
+        f = open(settings.MEDIA_ROOT + settings.VIDEO_TEST)
+        data = f.read()
+        lenth = len(data)
+
+
+         # get range
+        r = request.META["HTTP_RANGE"]
+        start = int(r.replace("bytes=", "").split("-")[0])
+        finish = int(r.replace("bytes=", "").split("-")[1])
+
+        # start_o = start + offset
+
+
+
+
+        range_data = data[start:finish]
+        # import ipdb;ipdb.set_trace()
+
+        response = Response(range_data, content_type="video/mp4", status=206)
+        response['Accept-Ranges'] = 'bytes'
+        response['Accept-Content-Length'] = lenth
+        response['Content-Range'] = 'bytes '+str(start)+'-'+str(finish)+'/'+str(lenth)
+        # response['X-Accel-Redirect'] = settings.MEDIA_URL + 'report/2016/03/23/SampleVideo_1280x720_1mb.mp4'
+
+        return response
+
+
+    def head(self, request, format=None):
+        # f = open(settings.MEDIA_ROOT + '/report/2016/04/07/SampleVideo_1280x720_1mb.mp4')
+        # data = f.read()[0:10]
+
+        response = Response( content_type="video/mp4", status=206)
+        response['Accept-Ranges'] = 'bytes'
+        response['Accept-Content-Length'] = '1000'
+        # response['X-Accel-Redirect'] = settings.MEDIA_URL + 'report/2016/03/23/SampleVideo_1280x720_1mb.mp4'
+
+
+        return response
