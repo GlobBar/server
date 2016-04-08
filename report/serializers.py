@@ -7,6 +7,8 @@ from files.models import  ReportImage
 from report.report_manager import ReportManager
 import os
 from notification.notification_manager import NotificationManager
+from points.points_manager import PointManager
+
 
 class ReportSerializer(serializers.ModelSerializer):
 
@@ -108,6 +110,31 @@ class ReportSerializer(serializers.ModelSerializer):
         report.expired = expired_utc
 
         report.save()
+
+        # Points
+        answer_cnt = 0
+        answers = [
+            report.is_going,
+            report.queue,
+            report.charge,
+            report.gender_relation,
+            report.bar_filling,
+            report.music_type,
+        ]
+
+        for answ in answers:
+            if answ is not None:
+                answer_cnt += 1
+
+        point_manager = PointManager()
+        #  Add points
+        data = {
+            'user': report.user,
+            'place': report.place,
+            'answer_cnt': answer_cnt,  # For each answer user get 1 point
+        }
+        point_manager.add_point_by_type('answer', data)
+
         # Send notifications if it is HOT
         notification_manager = NotificationManager()
         notification_manager.send_hot_plases_notify(report)
