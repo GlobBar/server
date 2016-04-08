@@ -17,6 +17,7 @@ from report.serializers import ReportSerializer
 from report.report_manager import ReportManager
 from places.models import Place
 from notification.notification_manager import NotificationManager
+from points.points_manager import PointManager
 
 
 class FileUploadView(APIView):
@@ -128,6 +129,14 @@ class ReportFileUploadView(APIView):
 
         report.save()
 
+        #  Add points
+        point_manager = PointManager()
+        data = {
+            'user': report.user,
+            'place': report.place,
+        }
+        point_manager.add_point_by_type('photo', data)
+
         # Send notifications if it is HOT
         notification_manager = NotificationManager()
         notification_manager.send_hot_plases_notify(report)
@@ -204,6 +213,14 @@ class ReportVideoUploadView(APIView):
 
         report.save()
 
+        #  Add points
+        point_manager = PointManager()
+        data = {
+            'user': report.user,
+            'place': report.place,
+        }
+        point_manager.add_point_by_type('video', data)
+
         # Send notifications if it is HOT
         notification_manager = NotificationManager()
         notification_manager.send_hot_plases_notify(report)
@@ -228,8 +245,6 @@ class ReportVideoUploadView(APIView):
 
         serializer = ReportSerializer(report, many=False)
         return Response(serializer.data)
-
-
 
 
 class ConvertTokenViewCustom(ConvertTokenView):
