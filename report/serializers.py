@@ -206,13 +206,25 @@ class ReportForListSerializer(serializers.ModelSerializer):
     def get_thumbnail(self, obj):
         res = None
 
-        path = obj.image_from_query
-        if path is not None:
+
+
+        if obj.type == 1:
+            path = obj.image_from_query
             abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
+            root_path = 'thumbs/'+path
+
+        else:
+            path = obj.thumbnail_from_query
+            abs_path = settings.MEDIA_ROOT+'/'+path
+            root_path = path
+            # import ipdb; ipdb.set_trace()
+
+        if path is not None:
             if os.path.isfile(abs_path):
                 res = settings.SITE_DOMAIN
-                res += '/media/thumbs/'
-                res += path
+                res += '/media/'
+                res += root_path
+
         return res
 
     def to_representation(self, instance):
@@ -234,21 +246,20 @@ class ReportForListSerializer(serializers.ModelSerializer):
     def get_report_media(self, obj):
 
         if obj.report_image is not None:
-            try:
-                # puth = str(obj.report_image.image)
-                if obj.type == 1:
-                    puth = str(obj.report_image.image)
-                else:
-                    puth = str(obj.report_image.video)
-            except:
-                puth = obj.image_from_query
 
-            # TEST
-            # if obj.type == 1:
-            #     puth = str(obj.image_from_query)
-            # else:
-            #     puth = str(obj.video_from_query)
-            # TEST
+
+            if obj.type == 1:
+                try:
+                    puth = str(obj.report_image.image)
+                except:
+                    puth = obj.image_from_query
+
+            else:
+                try:
+                    puth = str(obj.report_image.video)
+                except:
+                    puth = obj.video_from_query
+
 
             res = settings.SITE_DOMAIN
             res += '/media/'
