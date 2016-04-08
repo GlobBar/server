@@ -42,3 +42,18 @@ urlpatterns = [
 
 urlpatterns += staticfiles_urlpatterns()
 
+
+from django.contrib.auth.models import Group
+from oauth2_provider.models import AccessToken, Application, Grant, RefreshToken
+
+admin.site.unregister(Group)
+admin.site.unregister(AccessToken)
+admin.site.unregister(Application)
+admin.site.unregister(Grant)
+admin.site.unregister(RefreshToken)
+
+
+
+
+
+admin.site.site_header = 'Night Life administration'
