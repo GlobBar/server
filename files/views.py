@@ -136,7 +136,7 @@ class ReportFileUploadView(APIView):
 
         return Response(serializer.data)
 
-    # Update report (image and video)
+    # Update report (image)
     def put(self, request, format = None):
         description = request.POST.get('description')
         current_user = request.user
@@ -169,26 +169,20 @@ class ReportVideoUploadView(APIView):
         user = request.user
 
         try:
+           thumb_video_obj = request.data['thumbnail']
+        except:
+           thumb_video_obj = None
+        user = request.user
+
+        try:
             place = Place.objects.get(id=place_pk)
         except Place.DoesNotExist:
             return Response({'pk': ('Invalid pk')}, status=status.HTTP_400_BAD_REQUEST)
 
-
-        # GET THUMBNAIL FROM VIDEO
-
-        # import av
-        # container = av.open('/path/to/video.mp4')
-        #
-        # for packet in container.demux():
-        #     for frame in packet.decode():
-        #         if frame.type == 'video':
-        #             frame.to_image().save('/path/to/frame-%04d.jpg' % frame.index)
-
-
-
         report_image = ReportImage(
-            # image=file_obj,
+            video=file_obj,
             owner=user,
+            thumbnail=thumb_video_obj,
         )
 
         report_image.save()
@@ -216,6 +210,23 @@ class ReportVideoUploadView(APIView):
 
         serializer = ReportSerializer(report, many=False)
 
+        return Response(serializer.data)
+
+    # Update report (video)
+    def put(self, request, format = None):
+        description = request.POST.get('description')
+        current_user = request.user
+        try:
+            report = Report.objects.get(pk=request.POST.get('report_pk'))
+            report_owner = report.user
+        except Report.DoesNotExist:
+            return Response({'data': 'Invalid pk, report not found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if description != 'None' and current_user.pk == report_owner.pk:
+            report.description = description
+            report.save()
+
+        serializer = ReportSerializer(report, many=False)
         return Response(serializer.data)
 
 
@@ -278,48 +289,63 @@ class ConvertTokenViewCustom(ConvertTokenView):
 
 
 """""""""
-VIDEO
+VIDEO RANGE
 """""""""
+#
+# class ReportVideoRangeView(APIView):
+#     parser_classes = (MultiPartParser,)
+#
+#     def get(self, request, format=None):
+#         # sourse_ = settings.MEDIA_ROOT + settings.VIDEO_TEST
+#         #
+#         # with open(sourse_, 'rb') as f:
+#         #     data = f.read()
+#         #
+#         # lenth = len(data)
+#
+#         import urllib2
+#         conn = urllib2.urlopen('http://127.0.0.1:8000/media/report/2016/04/07/SampleVideo_1280x720_1mb.mp4')
+#         byte = conn.read()
+#         conn.close()
+#         lenth = len(byte)
+#
+#
+#          # get range
+#         r = request.META["HTTP_RANGE"]
+#         start = int(r.replace("bytes=", "").split("-")[0])
+#         finish = int(r.replace("bytes=", "").split("-")[1])
+#
+#         # start_o = start + offset
+#
+#
+#         range_data = byte[start:finish]
+#         # import ipdb;ipdb.set_trace()
+#
+#         response = Response(range_data, content_type="video/mp4", status=206)
+#         response['Accept-Ranges'] = 'bytes'
+#         response['Accept-Content-Length'] = lenth
+#         # response['Connection'] = 'keep-alive'
+#         response['Content-Range'] = 'bytes '+str(start)+'-'+str(finish)+'/'+str(lenth)
+#
+#         return response
+#
+#
+#     def head(self, request, format=None):
+#         # f = open(settings.MEDIA_ROOT + '/report/2016/04/07/SampleVideo_1280x720_1mb.mp4')
+#         # data = f.read()[0:10]
+#
+#         response = Response( content_type="video/mp4", status=206)
+#         response['Accept-Ranges'] = 'bytes'
+#         response['Accept-Content-Length'] = '1000'
+#         # response['X-Accel-Redirect'] = settings.MEDIA_URL + 'report/2016/03/23/SampleVideo_1280x720_1mb.mp4'
+#
+#
+#         return response
 
 class ReportVideoRangeView(APIView):
     parser_classes = (MultiPartParser,)
 
     def get(self, request, format=None):
-        f = open(settings.MEDIA_ROOT + settings.VIDEO_TEST)
-        data = f.read()
-        lenth = len(data)
 
 
-         # get range
-        r = request.META["HTTP_RANGE"]
-        start = int(r.replace("bytes=", "").split("-")[0])
-        finish = int(r.replace("bytes=", "").split("-")[1])
-
-        # start_o = start + offset
-
-
-
-
-        range_data = data[start:finish]
-        # import ipdb;ipdb.set_trace()
-
-        response = Response(range_data, content_type="video/mp4", status=206)
-        response['Accept-Ranges'] = 'bytes'
-        response['Accept-Content-Length'] = lenth
-        response['Content-Range'] = 'bytes '+str(start)+'-'+str(finish)+'/'+str(lenth)
-        # response['X-Accel-Redirect'] = settings.MEDIA_URL + 'report/2016/03/23/SampleVideo_1280x720_1mb.mp4'
-
-        return response
-
-
-    def head(self, request, format=None):
-        # f = open(settings.MEDIA_ROOT + '/report/2016/04/07/SampleVideo_1280x720_1mb.mp4')
-        # data = f.read()[0:10]
-
-        response = Response( content_type="video/mp4", status=206)
-        response['Accept-Ranges'] = 'bytes'
-        response['Accept-Content-Length'] = '1000'
-        # response['X-Accel-Redirect'] = settings.MEDIA_URL + 'report/2016/03/23/SampleVideo_1280x720_1mb.mp4'
-
-
-        return response
+        return Response('TEST')

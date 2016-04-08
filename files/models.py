@@ -11,7 +11,9 @@ class ProfileImage(models.Model):
 
 
 class ReportImage(models.Model):
-    image = models.FileField(upload_to='report/%Y/%m/%d')
+    image = models.FileField(upload_to='report/%Y/%m/%d', null=True,)
+    video = models.FileField(upload_to='report/video/%Y/%m/%d', null=True,)
+    thumbnail = models.FileField(upload_to='thumbs/report/video/%Y/%m/%d', null=True,)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     image_thumbnail = ImageSpecField(source='image', id='images:thumb_',)
 
