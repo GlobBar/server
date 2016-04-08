@@ -25,9 +25,15 @@ class PointManager():
         else:
             new_points = point_type.points_count
 
+        # if it is report questions point - check count of answers (data['answer_cnt'])
+        if 'answer_cnt' in data:
+            new_points_last = new_points * data['answer_cnt']
+        else:
+            new_points_last = new_points
+
         # Update points
         now_utc = datetime.now(timezone('UTC'))
-        updated_points = exist_points + new_points
+        updated_points = exist_points + new_points_last
         exist_points_obj.points = updated_points
         exist_points_obj.updated = now_utc
         exist_points_obj.save()
