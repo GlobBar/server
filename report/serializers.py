@@ -210,14 +210,16 @@ class ReportForListSerializer(serializers.ModelSerializer):
 
         if obj.type == 1:
             path = obj.image_from_query
-            abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
-            root_path = 'thumbs/'+path
+            if path is not None:
+                abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
+                root_path = 'thumbs/'+path
 
         else:
             path = obj.thumbnail_from_query
-            abs_path = settings.MEDIA_ROOT+'/'+path
-            root_path = path
-            # import ipdb; ipdb.set_trace()
+            if path is not None:
+                abs_path = settings.MEDIA_ROOT+'/'+path
+                root_path = path
+                # import ipdb; ipdb.set_trace()
 
         if path is not None:
             if os.path.isfile(abs_path):
