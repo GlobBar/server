@@ -1,0 +1,3 @@
+#!/var/www/html/nightlife/nlenv/bin/python
+from Cheetah.CheetahWrapper import _cheetah_compile
+_cheetah_compile()

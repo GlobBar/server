@@ -25,7 +25,11 @@ class Place(models.Model):
 
     class Meta:
         ordering = ('id', )
+        verbose_name = "Venue"
+        verbose_name_plural = "Venues List"
 
+    def __unicode__(self):
+        return u'%s' % (self.title, )
 
 class Checkin(models.Model):
 

@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% block branding %}
+<h1 id="site-name">{{  'Night Life administration' }}</h1>
+{% endblock %}
+{% block content %}
+
+      <table>
+          <tr>
+              <td>Picture:</td>
+              <td>
+                  <img width="100%" src="{{ thumb_url }}">
+              </td>
+          </tr>
+          <!--<tr>-->
+              <!--<td>Title:</td>-->
+              <!--<td>-->
+                    <!--{{ obj.title }}-->
+              <!--</td>-->
+          <!--</tr>-->
+          <tr>
+              <td>Description:</td>
+              <td>{{ obj.description}} </td>
+          </tr>
+          <tr>
+              <!--<td>Address:</td>-->
+              <!--<td>{{ obj.address}} </td>-->
+          <!--</tr>-->
+          <!--<tr>-->
+              <!--<td>Opening hours:</td>-->
+              <!--<td>{{ obj.opening_hours}} </td>-->
+          <!--</tr>-->
+          <!--<tr>-->
+              <!--<td>Music type:</td>-->
+              <!--<td>{{ obj.music_type}} </td>-->
+          <!--</tr>-->
+          <!--<tr>-->
+              <!--<td>Age group:</td>-->
+              <!--<td>{{ obj.age_group}} </td>-->
+          <!--</tr>-->
+
+      </table>
+
+
+{% endblock %}

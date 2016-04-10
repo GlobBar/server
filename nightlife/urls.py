@@ -42,3 +42,31 @@ urlpatterns = [
 
 urlpatterns += staticfiles_urlpatterns()
 
+from django.contrib.auth.models import Group
+from oauth2_provider.models import AccessToken, Application, Grant, RefreshToken
+from djcelery.models import CrontabSchedule, IntervalSchedule,  TaskState, WorkerState, PeriodicTask
+from pushy.models import Device, PushNotification
+from social.apps.django_app.default.models import Association, Nonce, UserSocialAuth
+
+admin.site.unregister(Group)
+admin.site.unregister(AccessToken)
+admin.site.unregister(Application)
+admin.site.unregister(Grant)
+admin.site.unregister(RefreshToken)
+
+admin.site.unregister(CrontabSchedule)
+admin.site.unregister(IntervalSchedule)
+admin.site.unregister(TaskState)
+admin.site.unregister(WorkerState)
+admin.site.unregister(PeriodicTask)
+
+admin.site.unregister(Device)
+admin.site.unregister(PushNotification)
+
+admin.site.unregister(Association)
+admin.site.unregister(Nonce)
+admin.site.unregister(UserSocialAuth)
+
+
+admin.site.site_header = 'Night Life administration'
+admin.site.index_title = 'Night Life Dashboard'

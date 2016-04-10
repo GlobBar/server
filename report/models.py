@@ -7,12 +7,17 @@ from django.contrib.auth.models import User
 
 
 class Report(models.Model):
+    CHOICES = (
+        (0, 'A'),
+        (1, 'B'),
+    )
+
     created = models.DateTimeField(auto_now_add=True)
     expired = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True, blank=True)
     enable = models.BooleanField(default=True)
     is_going = models.NullBooleanField(null=True, blank=True)
-    bar_filling = models.IntegerField(null=True, blank=True)
+    bar_filling = models.IntegerField(choices=CHOICES, null=True, blank=True)
     music_type = models.IntegerField(null=True, blank=True)
     gender_relation = models.IntegerField(null=True, blank=True)
     charge = models.IntegerField(null=True, blank=True)
@@ -30,3 +35,5 @@ class ReportImageLike(models.Model):
 
     class Meta:
         ordering = ('id',)
+        verbose_name = "Report"
+        verbose_name_plural = "Added Reports"
