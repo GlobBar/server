@@ -12,7 +12,7 @@ from points.points_manager import PointManager
 
 class ReportSerializer(serializers.ModelSerializer):
 
-    report_image = serializers.SerializerMethodField()
+    report_media = serializers.SerializerMethodField()
     created = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
@@ -53,11 +53,15 @@ class ReportSerializer(serializers.ModelSerializer):
 
     def get_thumbnail(self, obj):
         try:
-            thumbnail_path = obj.report_image.image_thumbnail.url
+            if obj.type == 1:
+                thumbnail_path = obj.report_image.image_thumbnail.url
+            else:
+                thumbnail_path = obj.report_image.thumbnail.url
             res = settings.SITE_DOMAIN
             res += thumbnail_path
         except:
             res = None
+
         return res
 
     def to_representation(self, instance):
@@ -67,11 +71,14 @@ class ReportSerializer(serializers.ModelSerializer):
                 del report[i]
         return report
 
-    def get_report_image(self, obj):
+    def get_report_media(self, obj):
 
         if obj.report_image is not None:
             try:
-                puth = str(obj.report_image.image)
+                if obj.type == 1:
+                    puth = str(obj.report_image.image)
+                else:
+                    puth = str(obj.report_image.video)
             except:
                 puth = obj.image_from_query
             res = settings.SITE_DOMAIN
@@ -96,7 +103,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description', 'thumbnail', 'like_cnt', 'is_hot',
+                  'charge', 'queue', 'type', 'report_media', 'description', 'thumbnail', 'like_cnt', 'is_hot',
                   'is_liked'
                   )
 
@@ -151,7 +158,7 @@ class ReportImageLikeSerializer(serializers.ModelSerializer):
 
 class ReportForListSerializer(serializers.ModelSerializer):
 
-    report_image = serializers.SerializerMethodField()
+    report_media = serializers.SerializerMethodField()
     owner = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
@@ -199,13 +206,27 @@ class ReportForListSerializer(serializers.ModelSerializer):
     def get_thumbnail(self, obj):
         res = None
 
-        path = obj.image_from_query
+
+
+        if obj.type == 1:
+            path = obj.image_from_query
+            if path is not None:
+                abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
+                root_path = 'thumbs/'+path
+
+        else:
+            path = obj.thumbnail_from_query
+            if path is not None:
+                abs_path = settings.MEDIA_ROOT+'/'+path
+                root_path = path
+                # import ipdb; ipdb.set_trace()
+
         if path is not None:
-            abs_path = settings.MEDIA_ROOT+'/thumbs/'+path
             if os.path.isfile(abs_path):
                 res = settings.SITE_DOMAIN
-                res += '/media/thumbs/'
-                res += path
+                res += '/media/'
+                res += root_path
+
         return res
 
     def to_representation(self, instance):
@@ -224,13 +245,24 @@ class ReportForListSerializer(serializers.ModelSerializer):
         except:
             return {}
 
-    def get_report_image(self, obj):
+    def get_report_media(self, obj):
 
         if obj.report_image is not None:
-            try:
-                puth = str(obj.report_image.image)
-            except:
-                puth = obj.image_from_query
+
+
+            if obj.type == 1:
+                try:
+                    puth = str(obj.report_image.image)
+                except:
+                    puth = obj.image_from_query
+
+            else:
+                try:
+                    puth = str(obj.report_image.video)
+                except:
+                    puth = obj.video_from_query
+
+
             res = settings.SITE_DOMAIN
             res += '/media/'
             res += puth
@@ -242,5 +274,5 @@ class ReportForListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
-                  'charge', 'queue', 'type', 'report_image', 'description', 'owner', 'thumbnail', 'like_cnt', 'is_hot',
+                  'charge', 'queue', 'type', 'report_media', 'description', 'owner', 'thumbnail', 'like_cnt', 'is_hot',
                   'is_liked')

@@ -97,7 +97,7 @@ class UserDetail(APIView):
     def delete(self, request, pk, format=None):
         user = self.get_object(pk)
         user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"data": "User was successfully deleted."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
