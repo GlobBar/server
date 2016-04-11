@@ -70,8 +70,6 @@ class VenuesAdmin(admin.ModelAdmin):
         return render_to_response(self.review_template, {
             'title': 'Venue Details: %s' % entry.title,
             'entry': entry,
-            # 'opts': self.model._meta,
-            # 'root_path': self.admin_site.root_path,
         }, context_instance=RequestContext(request))
 
 admin.site.register(Place, VenuesAdmin)
