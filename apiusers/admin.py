@@ -22,7 +22,7 @@ class CustomUserAdmin(UserAdmin):
 
     def cst_user_image(self, obj):
         img_url = ProfileImage.objects.get(owner=obj).image
-        res = '<img height="50" src="%s" />' % (img_url)
+        res = '<img height="50" width="50" src="%s" />' % (img_url)
         return res
 
     cst_user_image.allow_tags = True
