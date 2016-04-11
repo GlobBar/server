@@ -67,12 +67,5 @@ class CustomUserAdmin(UserAdmin):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
 
-
-        # return render_to_response(self.review_template, {
-        #     'title': 'Venue Details: %s' % entry.title,
-        #     'entry': entry,
-        # }, context_instance=RequestContext(request))
-
-
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
