@@ -6,37 +6,44 @@
 
       <table>
           <tr>
-              <td>Picture:</td>
+              <td>Picture/Video:</td>
               <td>
-                  <img width="100%" src="{{ thumb_url }}">
+                  {% if obj.type == 1 %}
+                    <img width="100%" src="/media/{{ obj.report_image.image_thumbnail }}">
+                  {% else %}
+                  <video width="320" height="240" controls>
+                      <source src="/media/{{ obj.report_image.video }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+
+                  {% endif %}
               </td>
           </tr>
-          <!--<tr>-->
-              <!--<td>Title:</td>-->
-              <!--<td>-->
-                    <!--{{ obj.title }}-->
-              <!--</td>-->
-          <!--</tr>-->
+
           <tr>
               <td>Description:</td>
               <td>{{ obj.description}} </td>
           </tr>
           <tr>
-              <!--<td>Address:</td>-->
-              <!--<td>{{ obj.address}} </td>-->
-          <!--</tr>-->
-          <!--<tr>-->
-              <!--<td>Opening hours:</td>-->
-              <!--<td>{{ obj.opening_hours}} </td>-->
-          <!--</tr>-->
-          <!--<tr>-->
-              <!--<td>Music type:</td>-->
-              <!--<td>{{ obj.music_type}} </td>-->
-          <!--</tr>-->
-          <!--<tr>-->
-              <!--<td>Age group:</td>-->
-              <!--<td>{{ obj.age_group}} </td>-->
-          <!--</tr>-->
+          <tr>
+              <td>Created:</td>
+              <td>
+                    {{ obj.created }}
+              </td>
+          </tr>
+          <tr>
+              <td>Venue:</td>
+              <td>
+                    {{ obj.place }} <span style="color: grey;">{{ obj.place.address}}</span>
+              </td>
+          </tr>
+          <tr>
+              <td>Ovner:</td>
+              <td>
+                    {{ obj.user }}
+              </td>
+          </tr>
+
 
       </table>
 

@@ -1,0 +1,138 @@
+{% extends "admin/base_site.html" %}
+{% block branding %}
+<h1 id="site-name">{{  'Night Life administration' }}</h1>
+{% endblock %}
+{% block content %}
+
+      <table>
+
+          <tr>
+              <td class="grey">Venue:</td>
+              <td>
+                   {% if obj.place.logo %}
+                      <img width="20%" src="{{ obj.place.logo.url }}">
+                  {% endif%}
+                  {{ obj.place }} <span style="color: silver;">{{ obj.place.address}}</span>
+              </td>
+          </tr>
+          <tr>
+              <td class="grey">Description:</td>
+              <td>{{ obj.description}} </td>
+          </tr>
+          <tr>
+              <td class="grey">Is party going on:</td>
+              <td>{{ obj.is_going}} </td>
+          </tr>
+
+
+          <tr>
+              <td class="grey">Fullness:</td>
+              <td>
+                  {% if obj.bar_filling == 0 %}
+                        {{ 'Empty' }}
+                  {% elif obj.bar_filling == 1 %}
+                        {{ 'Slow' }}
+                  {% elif obj.bar_filling == 2 %}
+                        {{ 'Crowded' }}
+                  {% elif obj.bar_filling == 3 %}
+                        {{ 'Packed' }}
+                  {% endif %}
+
+              </td>
+          </tr>
+          <tr>
+              <td class="grey">Music:</td>
+              <td>
+                  {% if obj.bar_filling == 0 %}
+                        {{ 'No' }}
+                  {% elif obj.bar_filling == 1 %}
+                        {{ 'DJ-EDM/House' }}
+                  {% elif obj.bar_filling == 2 %}
+                        {{ 'DJ-disco' }}
+                  {% elif obj.bar_filling == 3 %}
+                        {{ 'DJ-hip' }}
+                  {% elif obj.bar_filling == 4 %}
+                        {{ 'Pop' }}
+                  {% elif obj.bar_filling == 5 %}
+                        {{ 'Live band' }}
+                  {% elif obj.bar_filling == 6 %}
+                        {{ 'Karaoke' }}
+                  {% elif obj.bar_filling == 6 %}
+                        {{ 'Other' }}
+                  {% endif %}
+              </td>
+          </tr>
+          <tr>
+              <td class="grey">Gender ratio:</td>
+              <td>
+                  {% if obj.bar_filling == 0 %}
+                        {{ 'Mostly guys' }}
+                  {% elif obj.bar_filling == 1 %}
+                        {{ 'More guys' }}
+                  {% elif obj.bar_filling == 2 %}
+                        {{ 'Balanced' }}
+                  {% elif obj.bar_filling == 3 %}
+                        {{ 'More Ladies' }}
+                  {% elif obj.bar_filling == 4 %}
+                    {{ 'Mostly Ladies' }}
+                  {% endif %}
+              </td>
+          </tr>
+          <tr>
+              <td class="grey">Cover charge:</td>
+              <td>
+                  {% if obj.bar_filling == 0 %}
+                        {{ 'Free' }}
+                  {% elif obj.bar_filling == 1 %}
+                        {{ '1-5$' }}
+                  {% elif obj.bar_filling == 2 %}
+                        {{ '10$' }}
+                  {% elif obj.bar_filling == 3 %}
+                        {{ 'Over 10$' }}
+                  {% endif %}
+              </td>
+          </tr>
+          <tr>
+              <td class="grey">Queue:</td>
+              <td>
+                  {% if obj.bar_filling == 0 %}
+                        {{ 'No queue' }}
+                  {% elif obj.bar_filling == 1 %}
+                        {{ 'Less then 10 people' }}
+                  {% elif obj.bar_filling == 2 %}
+                        {{ 'Long' }}
+                  {% elif obj.bar_filling == 3 %}
+                        {{ 'Enormous' }}
+                  {% endif %}
+              </td>
+          </tr>
+
+
+
+
+          <tr>
+          <tr>
+              <td class="grey">Created:</td>
+              <td>
+                    {{ obj.created }}
+              </td>
+          </tr>
+          <tr>
+              <td class="grey">Ovner:</td>
+              <td>
+                    {{ obj.user }}
+              </td>
+          </tr>
+
+
+      </table>
+
+
+<style type="text/css">
+    .grey {
+        color: grey;
+        min-width: 180px;
+    }
+
+</style>
+{% endblock %}

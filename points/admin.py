@@ -3,6 +3,10 @@ from points.models import PointType, PointsCount
 
 
 class PointTypeAdmin(admin.ModelAdmin):
+
+    def has_add_permission(self, request):
+        return False
+
     list_display = ('pk', 'title', 'points_count', 'points_count_partner')
     # list_filter = ['title']
 
@@ -10,7 +14,7 @@ class PointTypeAdmin(admin.ModelAdmin):
         (None, {
             'fields': [
                 'title',
-                'name',
+                # 'name',
                 'description',
                 'enable',
                 'points_count',
@@ -21,6 +25,10 @@ class PointTypeAdmin(admin.ModelAdmin):
 
 # Count of point for each user
 class PointsCountAdmin(admin.ModelAdmin):
+
+    def has_add_permission(self, request):
+        return False
+    
     list_display = (
         'pk',
         'updated',

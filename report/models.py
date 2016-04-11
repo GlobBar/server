@@ -27,6 +27,10 @@ class Report(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
     report_image = models.ForeignKey(ReportImage, on_delete=models.CASCADE, null=True, blank=True)
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name = "Report"
+        verbose_name_plural = "Added Reports"
 
 class ReportImageLike(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -35,5 +39,3 @@ class ReportImageLike(models.Model):
 
     class Meta:
         ordering = ('id',)
-        verbose_name = "Report"
-        verbose_name_plural = "Added Reports"
