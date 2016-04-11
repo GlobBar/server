@@ -40,9 +40,9 @@ class CustomUserAdmin(UserAdmin):
     # IS Active
     def cst_active(self, obj):
         if obj.is_active is True:
-            res = '<a href="/admin/auth/user/%s/enable_user/"><img src="/static/admin/img/icon-yes.svg" title="click to disable"></a>' % (obj.pk)
+            res = '<a href="/admin/auth/user/%s/enable_user/"><img src="/static/admin/img/icon-yes.svg" title="click to disable"> Block</a>' % (obj.pk)
         else:
-            res = '<a href="/admin/auth/user/%s/enable_user/"><img src="/static/admin/img/icon-no.svg" title="click to enable" ></a>' % (obj.pk)
+            res = '<a href="/admin/auth/user/%s/enable_user/"><img src="/static/admin/img/icon-no.svg" title="click to enable" > Unblock</a>' % (obj.pk)
         return res
     cst_active.allow_tags = True
     cst_active.short_description = 'IS ACTIVE'
