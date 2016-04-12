@@ -26,6 +26,11 @@ class NewsMessages(models.Model):
     is_pushed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name = "News"
+        verbose_name_plural = "News"
+
 
 # method for updating
 @receiver(post_save, sender=NewsMessages, dispatch_uid="create_all_users_message")
