@@ -1,19 +1,19 @@
 from django.contrib import admin
-from user_messages.models import Messages
+from user_messages.models import NewsMessages
 
 
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'user_to', 'title', 'body', 'created')
-    list_filter = ['user_to']
+class NewsMessagesAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'title', 'body', 'created')
+    list_filter = []
 
     fieldsets = [
         (None,               {
             'fields': [
                 'title',
                 'body',
-                'user_to',
+                # 'user_to',
                 # 'created',
             ]})
     ]
 
-admin.site.register(Messages, MessageAdmin)
+admin.site.register(NewsMessages, NewsMessagesAdmin)

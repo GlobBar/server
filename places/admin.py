@@ -3,12 +3,12 @@ from places.models import Place
 from django.template import RequestContext
 from django.conf.urls import url
 from django.shortcuts import render_to_response
+from places.models import Place
+from django import forms
 
-# class ChoiceInline(admin.StackedInline):
-#     model = Choice
-#     extra = 3
 
 class VenuesAdmin(admin.ModelAdmin):
+
     list_display = ('pk', 'cst_logo', 'cst_title', 'address', 'edit_field')
     list_filter = ['title', 'address']
 
