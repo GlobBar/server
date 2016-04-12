@@ -78,5 +78,20 @@ class NotificationManager:
 
                 except Device.DoesNotExist:
                     pass
+        return True
+
+    # NEWS notifications
+    def send_news_notify(self, users):
+        notification_manager = NotificationManager()
+
+        for user in users:
+            try:
+                device = Device.objects.get(user=user)
+                # Get notification strategy
+                notification_sender = notification_manager.get_notification_strategy(device)
+                # Send message
+                notification_sender.set_device_token(device.key).set_title('You receive a new message !').set_data({'type': 4}).send_message()
+            except Device.DoesNotExist:
+                pass
 
         return True

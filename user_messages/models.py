@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.db import connection
-
+from notification.notification_manager import NotificationManager
 
 # For single messages from User to User
 class Messages(models.Model):
@@ -48,14 +48,14 @@ def update_stock(sender, instance, **kwargs):
     for usr in users:
         newLanguages += [(instance.title, instance.body, usr.pk, now_utc)]
 
-    # push_users = users[-50:]
-    # for push_u in push_users:
-
-
-    # import ipdb;ipdb.set_trace()
 
     cursor = connection.cursor()
     cursor.executemany("insert into `user_messages_messages` (title, body, user_to, created) values (%s, %s, %s, %s)", newLanguages)
+
+    # Send notifications
+    push_users = users[:25]
+    notify_manager = NotificationManager()
+    notify_manager.send_news_notify(push_users)
 
 
 
