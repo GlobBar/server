@@ -36,11 +36,17 @@ class NewsMessages(models.Model):
 @receiver(post_save, sender=NewsMessages, dispatch_uid="create_all_users_message")
 def update_stock(sender, instance, **kwargs):
 
+
+    # Current time in UTC
+    from pytz import timezone
+    from datetime import datetime
+    now_utc = datetime.now(timezone('UTC'))
+
     users = User.objects.filter(is_active=True)
     newLanguages = []
 
     for usr in users:
-        newLanguages += [(instance.title, instance.body, usr.pk, )]
+        newLanguages += [(instance.title, instance.body, usr.pk, now_utc)]
 
     # push_users = users[-50:]
     # for push_u in push_users:
@@ -49,7 +55,7 @@ def update_stock(sender, instance, **kwargs):
     # import ipdb;ipdb.set_trace()
 
     cursor = connection.cursor()
-    cursor.executemany("insert into `user_messages_messages` (title, body, user_to) values (%s, %s, %s)", newLanguages)
+    cursor.executemany("insert into `user_messages_messages` (title, body, user_to, created) values (%s, %s, %s, %s)", newLanguages)
 
 
 
