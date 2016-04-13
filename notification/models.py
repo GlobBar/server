@@ -15,6 +15,7 @@ class DevToken(models.Model):
 
 class PushNotifications(models.Model):
 
+
     title = models.CharField(max_length=100, blank=False)
     name = models.CharField(max_length=100, blank=True)
     description = models.TextField(null=True, blank=True)

@@ -3,6 +3,9 @@ from city.models import City
 
 
 class CityAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     list_display = ('pk', 'title')
     list_filter = ['title']
 
