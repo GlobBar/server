@@ -31,13 +31,14 @@ class Place(models.Model):
     def __unicode__(self):
         return u'%s' % (self.title, )
 
+
 class Checkin(models.Model):
 
-    now = datetime.now()
-    expired_time = now.replace(hour=23, minute=59, second=59, microsecond=0)
+    # now = datetime.now()
+    # expired_time = now.replace(hour=23, minute=59, second=59, microsecond=0)
 
     created = models.DateTimeField(auto_now_add=True)
-    expired = models.DateTimeField(default=expired_time)
+    expired = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
     is_hidden = models.BooleanField(default=False)

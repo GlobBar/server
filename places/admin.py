@@ -9,8 +9,8 @@ from django import forms
 
 class VenuesAdmin(admin.ModelAdmin):
 
-    list_display = ('pk', 'cst_logo', 'cst_title', 'address', 'edit_field')
-    list_filter = ['title', 'address']
+    list_display = ('pk', 'cst_logo', 'cst_title', 'address', 'is_partner', 'edit_field')
+    list_filter = ['title', 'address', 'is_partner']
 
 
     # Logo
@@ -46,6 +46,7 @@ class VenuesAdmin(admin.ModelAdmin):
                 'music_type',
                 'age_group',
                 'enable',
+                'is_partner',
                 'latitude',
                 'longitude',
                 'logo',
