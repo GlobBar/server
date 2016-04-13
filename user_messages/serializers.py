@@ -10,7 +10,7 @@ class MessagesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Messages
-        fields = ('pk', 'title', 'body', 'user_from', 'user_to', 'owner', 'created')
+        fields = ('pk', 'title', 'body', 'user_from', 'user_to', 'owner', 'created', 'is_readed')
 
     def save(self, **kwargs):
         message = super(MessagesSerializer, self).save(**kwargs)

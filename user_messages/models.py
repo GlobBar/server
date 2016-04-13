@@ -14,6 +14,7 @@ class Messages(models.Model):
     body = models.TextField(blank=False,)
     status = models.IntegerField(null=True, blank=True)
     is_pushed = models.BooleanField(default=False)
+    is_readed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
 
 

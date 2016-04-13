@@ -46,3 +46,27 @@ class MessagesDetail(APIView):
         messages_serializer = MessagesSerializer(message)
 
         return Response(messages_serializer.data)
+
+
+# Sign message as read
+class MessagesIsRead(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+
+        if 'message_pk' in request.POST:
+            try:
+                message = Messages.objects.get(pk=request.POST.get('message_pk'))
+            except Messages.DoesNotExist:
+                return Response({"data": "Message with pk: "+request.POST.get('message_pk')+" not found"},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            message.is_readed = True
+            message.save()
+        else:
+            return Response({"data": "Parameter: message_pk not found"},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"data": "Message successfully updated !"}, status=status.HTTP_200_OK)
+

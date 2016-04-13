@@ -4,6 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     url(r'^messages/$', views.MessagesList.as_view()),
+    url(r'^messages/is_readed/$', views.MessagesIsRead.as_view()),
     url(r'^messages/(?P<message_pk>[0-9]+)/$', views.MessagesDetail.as_view()),
 ]
 
