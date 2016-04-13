@@ -17,7 +17,7 @@ class CheckInManager():
         # Convert to US/Pacific time zone
         zone_name = check_in.place.city.time_zone
         now_with_zone = now_utc.astimezone(timezone(zone_name))
-        if now_with_zone.hour > 6:
+        if now_with_zone.hour >= 6:
 
             # set next day 6:00
             now_with_zone += timedelta(days=1)
