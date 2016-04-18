@@ -14,7 +14,7 @@ class CityAdmin(admin.ModelAdmin):
             'fields': [
                 'title',
                 'address',
-                'enable',
+                # 'enable',
                 'time_zone',
                 'latitude',
                 'longitude',
