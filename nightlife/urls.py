@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^', include('apiusers.urls')),
     url(r'^', include('files.urls')),
     url(r'^', include('friends.urls')),
+    url(r'^', include('socapp.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^auth/convert-token/?$', ConvertTokenViewCustom.as_view(), name="convert_token"),
     url(r'^auth/', include('rest_framework_social_oauth2.urls')),

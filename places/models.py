@@ -19,9 +19,19 @@ class Place(models.Model):
     is_partner = models.BooleanField(default=False)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=False, null=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=False, null=True)
-    image = models.FileField(upload_to='place/%Y/%m/%d', blank=False, null=True)
-    logo = models.FileField(upload_to='place_logo/%Y/%m/%d', blank=False, null=True)
+    image = models.FileField(upload_to='place/%Y/%m/%d', blank=False, null=True, help_text='JPEG images only')
+    logo = models.FileField(upload_to='place_logo/%Y/%m/%d', blank=False, null=True, help_text='JPEG images only')
     city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=False)
+
+
+    def clean(self):
+        import re
+        from django.core.exceptions import ValidationError
+
+        p = re.compile(r'.*\.(jpg|jpeg)$', re.I)
+        filename = self.image.name
+        if not p.match(filename):
+            raise ValidationError('You must upload a JPEG image')
 
     class Meta:
         ordering = ('id', )
