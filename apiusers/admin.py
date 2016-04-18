@@ -13,6 +13,9 @@ class CustomUserAdmin(UserAdmin):
     def has_add_permission(self, request):
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     list_display = ['pk', 'cst_user_image', 'username', 'cst_active', 'edit_field']
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
@@ -30,9 +33,10 @@ class CustomUserAdmin(UserAdmin):
 
     # Actions
     def edit_field(self, obj):
-        res = '<span style="padding:5px;"><a href="/admin/auth/user/%s/change/"><span class="changelink">Edit</span></a></span>' \
-              '<span style="padding:5px;"><a href="/admin/auth/user/%s/delete/"><img src="/static/admin/img/icon-no.svg" alt="False" style="padding: 0 2px 5px 0 ;">' \
-              '<span class="Deletelink">Delete</span></a></span>' % (obj.pk, obj.pk)
+        res = '<span style="padding:5px;"><a href="/admin/auth/user/'+str(obj.pk)+'/change/"><span class="changelink">Edit</span></a></span>'
+              # '<span style="padding:5px;"><a href="/admin/auth/user/%s/delete/"><img src="/static/admin/img/icon-no.svg" alt="False" style="padding: 0 2px 5px 0 ;">' \
+              # '<span class="Deletelink">Delete</span></a></span>'
+        # % (obj.pk, obj.pk)
         return res
     edit_field.allow_tags = True
     edit_field.short_description = 'ACTIONS'
