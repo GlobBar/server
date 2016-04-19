@@ -6,6 +6,8 @@ from socapp.models import FbTokenToPost
 import requests
 from rest_framework.views import APIView
 from rest_framework import status
+from django.conf import settings
+
 
 class FbPosts(APIView):
     # auth
@@ -23,12 +25,17 @@ class FbPosts(APIView):
             stat_code = status.HTTP_400_BAD_REQUEST
 
         if err is False:
+            puth = '/media/logo_100.jpg'
+            logo = settings.SITE_DOMAIN
+            logo += puth
+
             final_url = "https://graph.facebook.com/me/feed"
             params = {
                 'message': 'Nightlife',
                 'access_token': user_fb_access_token.token,
-                'description': 'Nightlife',
-                'link': 'http://google.com',
+                'description': "Wondering what's going on tonight? Check out the GlobBar app! We help each other out and earn points towards discounted drinks",
+                'link': 'https://play.google.com/store/apps?hl=en',
+                'picture': logo
                 }
             res = requests.post(final_url, data=params)
             if res.status_code != 200:
