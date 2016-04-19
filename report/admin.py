@@ -20,6 +20,8 @@ class MediaAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+    list_per_page = 10
+
     def get_queryset(self, request):
         qs = super(MediaAdmin, self).get_queryset(request)
         return qs.filter(type__in=[1, 2])

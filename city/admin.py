@@ -6,6 +6,8 @@ class CityAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    list_per_page = 10
+
     list_display = ('pk', 'title')
     list_filter = ['title']
 

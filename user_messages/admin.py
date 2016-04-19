@@ -6,6 +6,8 @@ class NewsMessagesAdmin(admin.ModelAdmin):
     list_display = ('pk', 'title', 'body', 'created', 'edit_field')
     list_filter = []
 
+    list_per_page = 10
+
     fieldsets = [
         (None,               {
             'fields': [

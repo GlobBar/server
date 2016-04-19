@@ -9,6 +9,8 @@ class PointTypeAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    list_per_page = 10
+
     list_display = ('pk', 'title', 'points_count', 'points_count_partner')
     # list_filter = ['title']
 

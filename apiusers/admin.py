@@ -16,6 +16,9 @@ class CustomUserAdmin(UserAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    list_per_page = 10
+    ordering = ('username',)
+
     list_display = ['pk', 'cst_user_image', 'username', 'cst_active', 'edit_field']
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
