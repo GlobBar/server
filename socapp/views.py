@@ -34,7 +34,7 @@ class FbPosts(APIView):
                 'message': 'Nightlife',
                 'access_token': user_fb_access_token.token,
                 'description': "Wondering what's going on tonight? Check out the GlobBar app! We help each other out and earn points towards discounted drinks",
-                'link': 'https://play.google.com/store/apps?hl=en',
+                'link': 'https://itunes.apple.com/en/app/facebook/id284882215?mt=8',
                 'picture': logo
                 }
             res = requests.post(final_url, data=params)
