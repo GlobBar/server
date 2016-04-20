@@ -6,7 +6,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from friends.relation_strategy import FriendRelation, RequestRelation, FollowingRelation
 from friends.models import Relation
-from friends.serializers import RelationSerializer
+from friends.serializers import RelationSerializer, FollowerSerializer
 
 
 
@@ -44,6 +44,8 @@ class RelationList(APIView):
                 relation_strategy = RequestRelation()
             elif relation_type == 'following':
                 relation_strategy = FollowingRelation()
+
+            # Do not used
             elif relation_type == 'friend':
                 relation_strategy = FriendRelation()
             else:
@@ -66,12 +68,6 @@ class FollowerList(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
-    FRIEND_STATUS = 1
-    I_SEND_REQUEST_STATUS = 2
-    I_GET_REQUEST_STATUS = 3
-    MY_FOLLOWER_STATUS = 4  # Friend following his user
-    I_FOLLOWING_STATUS = 5  # User following his friend
-
     def get(self, request, format=None):
 
         limit_from = str(request.GET.get('limit_from'))
@@ -84,24 +80,23 @@ class FollowerList(APIView):
         # import ipdb;ipdb.set_trace()
         follovers = Relation.objects.raw(
                 'SELECT '
-                    'friends_relation.id, '
-                    'friends_relation.status, '
+                    'friends_follower.id, '
+                    'friends_follower.status, '
                     'auth_user.id AS user_pk, '
                     'auth_user.username AS user_name, '
                     'files_profileimage.image AS user_image '
 
-                'FROM friends_relation '
-                'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
+                'FROM friends_follower '
+                'LEFT JOIN auth_user ON auth_user.id = friends_follower.friend_id '
                 'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
 
-                'WHERE friends_relation.status IN( '+str(self.MY_FOLLOWER_STATUS)+' ) '
-                'AND friends_relation.friend_id = '+str(request.user.pk)+' '
+                'WHERE friends_follower.user = '+str(request.user.pk)+' '
 
                 'ORDER BY auth_user.username ASC '
                 'LIMIT '+limit_from+', '+limit_count+''
             )
 
-        serializer = RelationSerializer(follovers, many=True)
+        serializer = FollowerSerializer(follovers, many=True)
         return Response(serializer.data)
 
 
@@ -109,12 +104,6 @@ class FollowingsList(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
-    FRIEND_STATUS = 1
-    I_SEND_REQUEST_STATUS = 2
-    I_GET_REQUEST_STATUS = 3
-    MY_FOLLOWER_STATUS = 4  # Friend following his user
-    I_FOLLOWING_STATUS = 5  # User following his friend
-
     def get(self, request, format=None):
 
         limit_from = str(request.GET.get('limit_from'))
@@ -124,26 +113,25 @@ class FollowingsList(APIView):
         if limit_count == 'None':
             limit_count = '100000'
 
-        follovers = Relation.objects.raw(
-                'SELECT '
-                    'friends_relation.id, '
-                    'friends_relation.status, '
-                    'auth_user.id AS user_pk, '
-                    'auth_user.username AS user_name, '
-                    'files_profileimage.image AS user_image '
+        follovings = Relation.objects.raw(
+            'SELECT '
+                'friends_following.id, '
+                'friends_following.status, '
+                'auth_user.id AS user_pk, '
+                'auth_user.username AS user_name, '
+                'files_profileimage.image AS user_image '
 
-                'FROM friends_relation '
-                'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
-                'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
+            'FROM friends_following '
+            'LEFT JOIN auth_user ON auth_user.id = friends_following.friend_id '
+            'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
 
-                'WHERE friends_relation.status IN( '+str(self.I_FOLLOWING_STATUS)+' ) '
-                'AND friends_relation.friend_id = '+str(request.user.pk)+' '
+            'WHERE friends_following.user = ' + str(request.user.pk) + ' '
 
-                'ORDER BY auth_user.username ASC '
-                'LIMIT '+limit_from+', '+limit_count+''
+            'ORDER BY auth_user.username ASC '
+            'LIMIT ' + limit_from + ', ' + limit_count + ''
             )
 
-        serializer = RelationSerializer(follovers, many=True)
+        serializer = FollowerSerializer(follovings, many=True)
         return Response(serializer.data)
 
 
@@ -151,12 +139,6 @@ class RequestsList(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
-    FRIEND_STATUS = 1
-    I_SEND_REQUEST_STATUS = 2
-    I_GET_REQUEST_STATUS = 3
-    MY_FOLLOWER_STATUS = 4  # Friend following his user
-    I_FOLLOWING_STATUS = 5  # User following his friend
-
     def get(self, request, format=None):
 
         limit_from = str(request.GET.get('limit_from'))
@@ -166,24 +148,23 @@ class RequestsList(APIView):
         if limit_count == 'None':
             limit_count = '100000'
 
-        follovers = Relation.objects.raw(
-                'SELECT '
-                    'friends_relation.id, '
-                    'friends_relation.status, '
-                    'auth_user.id AS user_pk, '
-                    'auth_user.username AS user_name, '
-                    'files_profileimage.image AS user_image '
+        requests = Relation.objects.raw(
+            'SELECT '
+            'friends_request.id, '
+            'friends_request.status, '
+            'auth_user.id AS user_pk, '
+            'auth_user.username AS user_name, '
+            'files_profileimage.image AS user_image '
 
-                'FROM friends_relation '
-                'LEFT JOIN auth_user ON auth_user.id = friends_relation.user '
-                'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
+            'FROM friends_request '
+            'LEFT JOIN auth_user ON auth_user.id = friends_request.friend_id '
+            'LEFT JOIN files_profileimage ON auth_user.id = files_profileimage.owner_id '
 
-                'WHERE friends_relation.status IN( '+str(self.I_SEND_REQUEST_STATUS)+' ) '
-                'AND friends_relation.friend_id = '+str(request.user.pk)+' '
+            'WHERE friends_request.user = ' + str(request.user.pk) + ' '
 
-                'ORDER BY auth_user.username ASC '
-                'LIMIT '+limit_from+', '+limit_count+''
+            'ORDER BY auth_user.username ASC '
+            'LIMIT ' + limit_from + ', ' + limit_count + ' '
             )
 
-        serializer = RelationSerializer(follovers, many=True)
+        serializer = RelationSerializer(requests, many=True)
         return Response(serializer.data)

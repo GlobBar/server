@@ -1,7 +1,8 @@
 from friends.models import Relation
 from pushy.models import Device
 from notification.notification_manager import NotificationManager
-
+from friends.models import Request, Follower, Following
+from notification.models import PushNotifications
 
 class RelationAbstract:
     """ Inteface / Abstract Class concept for relation. """
@@ -14,34 +15,31 @@ class RelationAbstract:
     def __init__(self):
         pass
 
-    def create_relation_base(self, user, friend, status, revers_status):
-        self.remove_relation(user, friend)
-        new_relation = Relation(user=user.pk, friend_id=friend.pk, status=status)
-        new_relation.save()
-        new_revers_relation = Relation(user=friend.pk, friend_id=user.pk, status=revers_status)
-        new_revers_relation.save()
-
-        return True
-
-    def remove_relation(self, user, friend):
+    def create_relation_base(self, user, friend, entity):
         try:
-            current_relation = Relation.objects.get(user=user.pk, friend_id=friend.pk)
+            new_relation = entity.objects.get(user=user.pk, friend_id=friend.pk)
+        except entity.DoesNotExist:
+            new_relation = entity(user=user.pk, friend_id=friend.pk)
+            new_relation.save()
+        return new_relation
+
+    def remove_relation_base(self, user, friend, entity):
+        try:
+            current_relation = entity.objects.get(user=user.pk, friend_id=friend.pk)
             current_relation.delete()
-            current_relation_revers = Relation.objects.get(user=friend.pk, friend_id=user.pk)
-            current_relation_revers.delete()
-            return True
         except:
             pass
 
-        return False
+        return True
 
 
 class RequestRelation(RelationAbstract):
 
     def create_relation(self, user, friend):
-        status = self.SEND_REQUEST_STATUS
-        revers_status = self.GET_REQUEST_STATUS
-        res = self.create_relation_base(user, friend, status, revers_status)
+        cnt = 10
+
+        # res = self.create_relation_base(user, friend, status, revers_status)
+        res = self.create_relation_base(friend, user,  Request)
 
         # Check requests count. If count >= 5 send push notify
         try:
@@ -49,9 +47,16 @@ class RequestRelation(RelationAbstract):
         except Device.DoesNotExist:
             return res
 
-        requsts = self.check_requsts(user)
+        requsts = self.check_requsts(friend, user)
+
+        try:
+            notify = PushNotifications.objects.get(name='request')
+            cnt = notify.count
+        except PushNotifications.DoesNotExist:
+            pass
+
         # import ipdb; ipdb.set_trace()
-        if requsts.count() > 0:
+        if requsts.count() > cnt:
             # Get notification strategy
             notification_sender = NotificationManager().get_notification_strategy(device)
             # Send message
@@ -64,20 +69,31 @@ class RequestRelation(RelationAbstract):
 
         return res
 
-    def check_requsts(self, user):
-        MY_REQUESTS_STATUS = 3
-
-        requests = Relation.objects.filter(status=MY_REQUESTS_STATUS, friend_id=user.pk, is_pushed=False)
+    def check_requsts(self, user, friend):
+        requests = Request.objects.filter(user=user.pk, friend_id=friend.pk, is_pushed=False)
         return requests
+
+    def remove_relation(self, user, friend):
+        res = self.remove_relation_base(user, friend, Request)
+        return res
 
 
 class FollowingRelation(RelationAbstract):
 
     def create_relation(self, user, friend):
-        status = self.FOLLOWING_STATUS
-        revers_status = self.FOLLOWER_STATUS
-        return self.create_relation_base(user, friend, status, revers_status)
 
+        self.remove_relation_base(user, friend, Request)
+
+        self.create_relation_base(user, friend, Follower)
+        self.create_relation_base(friend, user, Following)
+
+        return
+
+    def remove_relation(self, user, friend):
+        self.remove_relation_base(user, friend, Follower)
+        self.remove_relation_base(friend, user, Following)
+
+        return True
 
 class FriendRelation(RelationAbstract):
 

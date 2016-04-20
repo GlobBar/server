@@ -10,7 +10,8 @@ from django import forms
 class VenuesAdmin(admin.ModelAdmin):
 
     list_display = ('pk', 'cst_logo', 'cst_title', 'address', 'is_partner', 'edit_field')
-    list_filter = ['title', 'address', 'is_partner']
+    list_filter = ['is_partner']
+    search_fields = ['title']
 
     list_per_page = 10
 
