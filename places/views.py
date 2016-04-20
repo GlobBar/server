@@ -53,15 +53,19 @@ class SnippetList(APIView):
         # if city pk does not pass from client - find most nearest cities pk
         if my_city_pk is False:
             my_city = City.objects.raw(
-                'SELECT '
-                    'city_city.id '
-                'FROM city_city '
-                'WHERE city_city.enable = 1 '
-                'ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
-                    'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
-                    '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                ' SELECT '
+                    'city_city.id, '
+                    'COUNT(places_place.id) AS cnt '
+                ' FROM city_city '
+                ' LEFT JOIN places_place  ON places_place.city_id = city_city.id'
+                ' WHERE city_city.enable = 1 '
+                ' GROUP BY city_city.id '
+                ' HAVING cnt > 0 '
+                ' ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( city_city.latitude ) ) * '
+                    'cos( radians( city_city.longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                    '* sin( radians( city_city.latitude ) ) ) ) * 1000 / 1609.34, 1) '
                     '  ASC '
-                'LIMIT 0, 1'
+                ' LIMIT 0, 1'
             )
             try:
                 my_city_pk = ' WHERE places_place.city_id = '+str(my_city[0].pk)
@@ -113,9 +117,12 @@ class SnippetList(APIView):
             'my_like_place_pks': my_like_place_pks
         })
 
-        cities = City.objects.filter(enable=1)
-        city_serializer = CitySerializer(cities, many=True)
-        data = {'places': serializer.data, 'cities': city_serializer.data}
+        # cities = City.objects.filter(enable=1)
+        # city_serializer = CitySerializer(cities, many=True)
+
+        data = {'places': serializer.data
+                # ,'cities': city_serializer.data
+                }
 
         return Response(data)
 
@@ -566,16 +573,22 @@ class CityList(APIView):
                     'city_city.title, '
                     'city_city.latitude, '
                     'city_city.longitude, '
-                    'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
-                    'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
-                    '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) AS distance '
 
-                'FROM city_city '
-                'WHERE city_city.enable = 1 '
-                'ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                    'COUNT(places_place.id) AS cnt, '
+                    'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( city_city.latitude ) ) * '
+                    'cos( radians( city_city.longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                    '* sin( radians( city_city.latitude ) ) ) ) * 1000 / 1609.34, 1) AS distance '
+
+                ' FROM city_city '
+                ' LEFT JOIN places_place  ON places_place.city_id = city_city.id'
+                ' WHERE city_city.enable = 1 '
+                ' GROUP BY city_city.id '
+                ' HAVING cnt > 0 '
+                ' ORDER BY ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
                     'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
                     '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
                     '  ASC '
+
             )
         city_serializer = CitySerializer(cities, many=True)
 
