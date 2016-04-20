@@ -33,7 +33,7 @@ class FbPosts(APIView):
             params = {
                 'message': 'Nightlife',
                 'access_token': user_fb_access_token.token,
-                'description': "Wondering what's going on tonight? Check out the GlobBar app! We help each other out and earn points towards discounted drinks",
+                'description': "Check out the GlobBar app! We bar hoppers help each other out and earn points towards discounted drinks.",
                 'link': 'https://itunes.apple.com',
                 'picture': logo
                 }
