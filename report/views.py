@@ -9,13 +9,20 @@ from report.models import ReportImageLike, Report
 from places.models import Place, Checkin, Like
 from city.models import City
 from datetime import datetime
-import pytz
+import pytz, os
 from report.report_repository import ReportRepository
+from django.conf import settings
 
 
 class ReportList(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self, pk):
+        try:
+            return Report.objects.get(pk=pk)
+        except Report.DoesNotExist:
+            raise Http404
 
     def post(self, request, format=None):
         serializer = ReportSerializer(data=request.data, context={'request': request})
@@ -23,6 +30,37 @@ class ReportList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request,  format=None):
+        pk = request.data.get('report_pk')
+        report = self.get_object(pk)
+        # if is video /image
+        video = 2
+        img = 1
+
+        if report.report_image is not None:
+            file = report.report_image
+            if report.type == video:
+                pathes = [
+                    settings.MEDIA_ROOT+'/'+str(file.video),
+                    settings.MEDIA_ROOT+'/'+str(file.thumbnail)
+                    ]
+            elif report.type == img:
+                pathes = [
+                    settings.MEDIA_ROOT+'/'+str(file.image),
+                    settings.MEDIA_ROOT+'/thumbs/'+str(file.image)
+                ]
+
+            file.delete()
+
+
+            for path in pathes:
+                if os.path.isfile(path):
+                    os.remove(path)
+                    
+        report.delete()
+
+        return Response({"data": "Report was successfully deleted."}, status=status.HTTP_200_OK)
 
 
 class ReportDetail(APIView):
@@ -47,6 +85,7 @@ class ReportDetail(APIView):
         snippet = self.get_object(pk)
         serializer = ReportSerializer(snippet, context={'my_like_report_pks': my_like_report_pks})
         return Response(serializer.data)
+
 
 
 class ReportImageLikeDetail(APIView):
