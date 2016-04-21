@@ -6,6 +6,8 @@ from report.report_manager import ReportManager
 from pytz import timezone
 from datetime import datetime
 from friends.models import Relation, Follower
+from notification.models import PushNotifications
+
 
 class NotificationManager:
 
@@ -33,8 +35,16 @@ class NotificationManager:
         if now_utc > place.last_push_expired:
             today_reports_cnt = report_repository.get_today_reports_cnt(place)
             # import ipdb; ipdb.set_trace()
+
+            cnt = 10
+            try:
+                notify = PushNotifications.objects.get(name='hot_venue')
+                cnt = notify.count
+            except PushNotifications.DoesNotExist:
+                pass
+
             # If place is HOT
-            if today_reports_cnt > 0:
+            if today_reports_cnt > cnt:
                 likes = Like.objects.filter(place=place)[0:100]  # TODO create Cron task to send notifications queue
                 notification_manager = NotificationManager()
 
@@ -73,7 +83,7 @@ class NotificationManager:
                     # Get notification strategy
                     notification_sender = notification_manager.get_notification_strategy(device)
                     # Send message
-                    notification_sender.set_device_token(device.key).set_title(user.first_name+' created new check-in in '+place.title+'.').set_data({'type': 2, 'club_id': place.pk, 'user_id': user.pk}).send_message()
+                    notification_sender.set_device_token(device.key).set_title(user.first_name+' just checked in at '+place.title+'.').set_data({'type': 2, 'club_id': place.pk, 'user_id': user.pk}).send_message()
 
                 except Device.DoesNotExist:
                     pass
@@ -89,7 +99,7 @@ class NotificationManager:
                 # Get notification strategy
                 notification_sender = notification_manager.get_notification_strategy(device)
                 # Send message
-                notification_sender.set_device_token(device.key).set_title('You receive a new message !').set_data({'type': 4}).send_message()
+                notification_sender.set_device_token(device.key).set_title('We have venue news!').set_data({'type': 4}).send_message()
             except Device.DoesNotExist:
                 pass
 
