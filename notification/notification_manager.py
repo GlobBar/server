@@ -5,7 +5,7 @@ from report.report_repository import ReportRepository
 from report.report_manager import ReportManager
 from pytz import timezone
 from datetime import datetime
-from friends.models import Relation
+from friends.models import Relation, Follower
 
 class NotificationManager:
 
@@ -58,7 +58,6 @@ class NotificationManager:
 
     # CHECK-IN notifications
     def send_check_in_notify(self, check_in):
-        MY_FOLLOWER_STATUS = 4
         user = check_in.user
         place = check_in.place
         notification_manager = NotificationManager()
@@ -66,11 +65,11 @@ class NotificationManager:
         if check_in.is_hidden is False:
             # Followers
 
-            followers = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=check_in.user.pk)
+            followers = Follower.objects.filter(user=check_in.user.pk)
             # import ipdb; ipdb.set_trace()
             for follower in followers:
                 try:
-                    device = Device.objects.get(user=follower.user)
+                    device = Device.objects.get(user=follower.friend)
                     # Get notification strategy
                     notification_sender = notification_manager.get_notification_strategy(device)
                     # Send message
