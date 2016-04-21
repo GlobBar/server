@@ -396,10 +396,17 @@ class CheckinList(APIView):
         # Current time in UTC
         now_utc = datetime.now(timezone('UTC'))
 
+
+
         try:
             place = Place.objects.get(pk=request.POST.get('place_pk'))
         except Place.DoesNotExist:
             return Response({'error': 'Invalid place_pk'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # set date when was created last report
+        place.created_lst_rpt = now_utc
+        place.save()
+
 
         # data for Add points
         data = {
@@ -455,6 +462,8 @@ class CheckinList(APIView):
             checkin.save()
             serializer = CheckinSerializer(checkin)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
