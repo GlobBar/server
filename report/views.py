@@ -39,6 +39,7 @@ class ReportList(APIView):
         img = 1
 
         if report.report_image is not None:
+            # Remove files
             file = report.report_image
             if report.type == video:
                 pathes = [
@@ -51,13 +52,18 @@ class ReportList(APIView):
                     settings.MEDIA_ROOT+'/thumbs/'+str(file.image)
                 ]
 
-            file.delete()
+            # Remove likes
+            likes = ReportImageLike.objects.filter(report=report)
+            if likes.count() > 0:
+                for li in likes:
+                    li.delete()
 
+            file.delete()
 
             for path in pathes:
                 if os.path.isfile(path):
                     os.remove(path)
-                    
+
         report.delete()
 
         return Response({"data": "Report was successfully deleted."}, status=status.HTTP_200_OK)
