@@ -24,11 +24,10 @@ class RelationAbstract:
         return new_relation
 
     def remove_relation_base(self, user, friend, entity):
-        try:
-            current_relation = entity.objects.get(user=user.pk, friend_id=friend.pk)
-            current_relation.delete()
-        except:
-            pass
+        current_relations = entity.objects.filter(user=user.pk, friend_id=friend.pk)
+        if current_relations.count() > 0:
+            for c_r in current_relations:
+                c_r.delete()
 
         return True
 
@@ -90,8 +89,9 @@ class FollowingRelation(RelationAbstract):
         return
 
     def remove_relation(self, user, friend):
-        self.remove_relation_base(user, friend, Follower)
-        self.remove_relation_base(friend, user, Following)
+
+        self.remove_relation_base(user, friend, Following)
+        self.remove_relation_base(friend, user, Follower)
 
         return True
 
