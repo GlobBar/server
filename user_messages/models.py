@@ -54,7 +54,7 @@ def update_stock(sender, instance, **kwargs):
     cursor.executemany("insert into `user_messages_messages` (title, body, user_to, created) values (%s, %s, %s, %s)", newLanguages)
 
     # Send notifications
-    push_users = users[:25]
+    push_users = users[:50]
     notify_manager = NotificationManager()
     notify_manager.send_news_notify(push_users)
 

@@ -69,7 +69,7 @@ class UserDetail(APIView):
         else:
             user = self.get_object(pk)
 
-        serializer = UserDetailSerializer(user)
+        serializer = UserDetailSerializer(user, context={'current_user': request.user})
 
         # My Report likes
         my_like_report_pks = []

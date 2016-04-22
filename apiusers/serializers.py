@@ -4,7 +4,7 @@ from rest_framework import serializers
 from files.models import ProfileImage
 from django.conf import settings
 import os
-from friends.models import Relation
+from friends.models import Relation, Follower, Following, Request
 from points.models import PointsCount
 
 
@@ -73,6 +73,7 @@ class UserDetailSerializer(serializers.Serializer):
     profile_image = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     followings_count = serializers.SerializerMethodField()
+    current_relation = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
 
 
@@ -93,16 +94,31 @@ class UserDetailSerializer(serializers.Serializer):
     #     report_seriolaser = ReportForListSerializer(last_reports, many=True)
     #     return report_seriolaser
 
-
     def get_followings_count(self, obj):
-        I_FOLLOWING_STATUS = 5  # User following his friend
-        followers_cnt = Relation.objects.filter(status=I_FOLLOWING_STATUS, friend_id=obj.pk).count()
+
+        followers_cnt = Following.objects.filter(user=obj.pk).count()
         return followers_cnt
 
     def get_followers_count(self, obj):
-        MY_FOLLOWER_STATUS = 4  # Friend following his user
-        followings_cnt = Relation.objects.filter(status=MY_FOLLOWER_STATUS, friend_id=obj.pk).count()
+        followings_cnt = Follower.objects.filter(user=obj.pk).count()
         return followings_cnt
+
+    def get_current_relation(self, obj):
+
+        current_user = self.context['current_user']
+        try:
+            is_request = Request.objects.get(user=obj.pk, friend=current_user.pk)
+            return 'request'
+        except:
+            pass
+
+        try:
+            is_follower = Follower.objects.get(user=obj.pk, friend=current_user.pk)
+            return 'following'
+        except:
+            pass
+
+        return 'no_relation'
 
     def get_profile_image(self, obj):
         try:
