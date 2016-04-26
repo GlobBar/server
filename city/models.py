@@ -24,3 +24,5 @@ class City(models.Model):
 
     class Meta:
         ordering = ('title', )
+        verbose_name = "City"
+        verbose_name_plural = "Cities"

@@ -21,3 +21,5 @@ class PushNotifications(models.Model):
     description = models.TextField(null=True, blank=True)
     count = models.IntegerField(null=True, blank=False, default=1)
 
+    class Meta:
+        verbose_name_plural = "Push notifications"
