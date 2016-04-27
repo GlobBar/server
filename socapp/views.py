@@ -31,7 +31,7 @@ class FbPosts(APIView):
 
             final_url = "https://graph.facebook.com/me/feed"
             params = {
-                'message': 'Nightlife',
+                'message': 'Check out GlobBar app! Easy way of checking in at venues and earning points.',
                 'access_token': user_fb_access_token.token,
                 'description': "Check out the GlobBar app! We bar hoppers help each other out and earn points towards discounted drinks.",
                 'link': 'https://itunes.apple.com',
