@@ -19,11 +19,13 @@ from django.conf.urls import url, include
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from files.views import ConvertTokenViewCustom
-
+from pages.views import police, terms
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('places.urls')),
+    url(r'^privacy_policy/', police),
+    url(r'^terms_and_conditions/', terms),
     url(r'^', include('user_messages.urls')),
     url(r'^', include('notification.urls')),
     url(r'^', include('points.urls')),
