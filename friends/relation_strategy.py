@@ -90,8 +90,8 @@ class FollowingRelation(RelationAbstract):
 
     def remove_relation(self, user, friend):
 
-        self.remove_relation_base(user, friend, Following)
-        self.remove_relation_base(friend, user, Follower)
+        self.remove_relation_base(user, friend, Follower)
+        self.remove_relation_base(friend, user, Following)
 
         return True
 
