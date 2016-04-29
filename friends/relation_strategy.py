@@ -77,7 +77,7 @@ class RequestRelation(RelationAbstract):
         return res
 
 
-class FollowerRelation(RelationAbstract):
+class FollowingRelation(RelationAbstract):
 
     def create_relation(self, user, friend):
 
@@ -96,7 +96,7 @@ class FollowerRelation(RelationAbstract):
         return True
 
 
-class FollowingRelation(RelationAbstract):
+class FollowerRelation(RelationAbstract):
 
     def create_relation(self, user, friend):
 
