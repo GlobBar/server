@@ -83,7 +83,7 @@ class NotificationManager:
                     # Get notification strategy
                     notification_sender = notification_manager.get_notification_strategy(device)
                     # Send message
-                    notification_sender.set_device_token(device.key).set_title(user.first_name+' just checked in at '+place.title+'.').set_data({'type': 2, 'club_id': place.pk, 'user_id': user.pk}).send_message()
+                    notification_sender.set_device_token(device.key).set_title(user.username+' just checked in at '+place.title+'.').set_data({'type': 2, 'club_id': place.pk, 'user_id': user.pk}).send_message()
 
                 except Device.DoesNotExist:
                     pass
