@@ -95,6 +95,25 @@ class FollowingRelation(RelationAbstract):
 
         return True
 
+
+class FollowerRelation(RelationAbstract):
+
+    def create_relation(self, user, friend):
+
+        self.remove_relation_base(user, friend, Request)
+
+        self.create_relation_base(user, friend, Following)
+        self.create_relation_base(friend, user, Follower)
+
+        return
+
+    def remove_relation(self, user, friend):
+
+        self.remove_relation_base(user, friend, Follower)
+        self.remove_relation_base(friend, user, Following)
+
+        return True
+
 class FriendRelation(RelationAbstract):
 
     def create_relation(self, user, friend):

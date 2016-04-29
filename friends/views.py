@@ -4,7 +4,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from friends.relation_strategy import FriendRelation, RequestRelation, FollowingRelation
+from friends.relation_strategy import FriendRelation, RequestRelation, FollowingRelation, FollowerRelation
 from friends.models import Relation
 from friends.serializers import RelationSerializer, FollowerSerializer
 
@@ -44,6 +44,8 @@ class RelationList(APIView):
                 relation_strategy = RequestRelation()
             elif relation_type == 'following':
                 relation_strategy = FollowingRelation()
+            elif relation_type == 'follower':
+                relation_strategy = FollowerRelation()
 
             # Do not used
             elif relation_type == 'friend':
