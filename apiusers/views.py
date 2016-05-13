@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from apiusers.serializers import UserSerializer, GroupSerializer, UserDetailSerializer
+from apiusers.serializers import UserSerializer, GroupSerializer, UserDetailSerializer, UserLoginPassSerializer
 from rest_framework import permissions
 from django.http import Http404
 from rest_framework.views import APIView
@@ -9,6 +9,10 @@ from rest_framework import status
 from report.models import Report
 from report.serializers import ReportSerializer
 from report.models import ReportImageLike
+import hashlib
+from oauth2_provider.models import AccessToken, Application, Grant, RefreshToken
+import datetime
+from pytz import timezone
 
 
 class UserList(APIView):
@@ -49,6 +53,72 @@ class UserList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserEmailLogin(APIView):
+
+    # permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+
+        # GENERATE access token
+        import random
+        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        pw_length = 30
+        acctoken = ""
+
+        for i in range(pw_length):
+            next_index = random.randrange(len(alphabet))
+            acctoken = acctoken + alphabet[next_index]
+
+
+        # user = self.get_object(pk)
+        serializer = UserLoginPassSerializer( data=request.data, context={'data': request.POST.get('password')})
+        if serializer.is_valid():
+
+            # Check is email unique
+
+            if User.objects.filter(email=request.POST.get('email')).count() >0 :
+                return Response({"data": "email: "+request.POST.get('email')+" already exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check is username unique
+
+            if User.objects.filter(username=request.POST.get('username')).count() >0 :
+                return Response({"data": "username: "+request.POST.get('username')+" already exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+            # Find client app
+            try:
+                application = Application.objects.get(client_id=request.POST.get('client_id'))
+
+            except Application.DoesNotExist:
+                return Response({"data": "client_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer.save()
+            # import ipdb;ipdb.set_trace()
+            user_id = serializer.data['pk']
+
+            now_plus_years = datetime.datetime.now(timezone('UTC')) + datetime.timedelta(days=(1*365))
+            access_token = AccessToken(
+                token=acctoken,
+                expires=now_plus_years,
+                scope='read write',
+                application_id=application.id,
+                user_id=user_id,
+            )
+            access_token.save()
+
+            # import ipdb;ipdb.set_trace()
+
+            return Response({
+              "access_token": acctoken,
+              "token_type": "Bearer",
+              "expires_in": 36000,
+              "refresh_token": None,
+              "scope": "read write"
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class UserDetail(APIView):

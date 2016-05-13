@@ -29,7 +29,13 @@ class UserSerializer(serializers.Serializer):
         """
         Create and return a new `Snippet` instance, given the validated data.
         """
-        return User.objects.create(**validated_data)
+        user = User.objects.create(**validated_data)
+        passw = self.context['data']
+        # import ipdb; ipdb.set_trace()
+        if passw is not None:
+            user.set_password(passw)
+            user.save()
+        return user
 
     def update(self, instance, validated_data):
         """
@@ -198,6 +204,62 @@ class LastUsersSerializer(serializers.Serializer):
     def get_profile_image(self, obj):
         try:
             profile_image = ProfileImage.objects.get(owner=obj.user)
+            puth = str(profile_image.image)
+            is_absolut_puth = puth.find('http')
+
+            if is_absolut_puth == -1:
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/'
+                my_file += puth
+            else:
+                my_file = puth
+
+        except ProfileImage.DoesNotExist:
+            anonim = settings.MEDIA_ROOT
+            anonim += '/anonim.jpg'
+            if os.path.isfile(anonim):
+                my_file = settings.SITE_DOMAIN
+                my_file += '/media/anonim.jpg'
+            else:
+                my_file = None
+
+        return my_file
+
+
+class UserLoginPassSerializer(serializers.Serializer):
+    pk = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    password = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    email = serializers.CharField(required=True, allow_blank=True, max_length=250)
+    profile_image = serializers.SerializerMethodField()
+    points_count = serializers.SerializerMethodField()
+
+    def get_points_count(self, obj):
+        try:
+            point_count = PointsCount.objects.get(user=obj)
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, user=obj)
+            point_count.save()
+
+        exist_points = point_count.points
+        return exist_points
+
+    def create(self, validated_data):
+        """
+        Create and return a new `Snippet` instance, given the validated data.
+        """
+        user = User.objects.create(**validated_data)
+        passw = self.context['data']
+        # import ipdb; ipdb.set_trace()
+        if passw is not None:
+            user.set_password(passw)
+            user.save()
+        return user
+
+
+    def get_profile_image(self, obj):
+        try:
+            profile_image = ProfileImage.objects.get(owner=obj)
             puth = str(profile_image.image)
             is_absolut_puth = puth.find('http')
 
