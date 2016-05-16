@@ -226,7 +226,7 @@ class LastUsersSerializer(serializers.Serializer):
         return my_file
 
 
-class UserLoginPassSerializer(serializers.Serializer):
+class UserRegisterPassSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
     username = serializers.CharField(required=True, allow_blank=True, max_length=100)
     password = serializers.CharField(required=True, allow_blank=True, max_length=100)
@@ -280,3 +280,14 @@ class UserLoginPassSerializer(serializers.Serializer):
                 my_file = None
 
         return my_file
+
+
+class UserLoginPassSerializer(serializers.Serializer):
+    pk = serializers.IntegerField(read_only=True)
+    username = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    password = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    email = serializers.CharField(required=True, allow_blank=True, max_length=250)
+
+
+
+

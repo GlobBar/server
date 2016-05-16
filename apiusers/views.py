@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
-from apiusers.serializers import UserSerializer, GroupSerializer, UserDetailSerializer, UserLoginPassSerializer
+from apiusers.serializers import UserSerializer, GroupSerializer, UserDetailSerializer, UserLoginPassSerializer, UserRegisterPassSerializer
 from rest_framework import permissions
 from django.http import Http404
 from rest_framework.views import APIView
@@ -9,11 +9,10 @@ from rest_framework import status
 from report.models import Report
 from report.serializers import ReportSerializer
 from report.models import ReportImageLike
-import hashlib
-from oauth2_provider.models import AccessToken, Application, Grant, RefreshToken
+from oauth2_provider.models import AccessToken, Application
 import datetime
 from pytz import timezone
-
+from apiusers.user_manager import UserManager
 
 class UserList(APIView):
     """
@@ -55,37 +54,88 @@ class UserList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Register by email
 class UserEmailLogin(APIView):
 
     # permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, format=None):
 
-        # GENERATE access token
-        import random
-        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        pw_length = 30
-        acctoken = ""
+        # user = self.get_object(pk)
+        serializer = UserLoginPassSerializer(data=request.data)
+        if serializer.is_valid():
 
-        for i in range(pw_length):
-            next_index = random.randrange(len(alphabet))
-            acctoken = acctoken + alphabet[next_index]
+            # Check is email unique
+            try:
+                user = User.objects.get(email=request.POST.get('email'))
+            except User.DoesNotExist:
+                return Response({"data": "email: "+request.POST.get('email')+" not found."}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Check is password correct unique
+            if user.check_password(request.POST.get('password')) is False:
+                return Response({"data": "password is not correct."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Find client app
+            try:
+                application = Application.objects.get(client_id=request.POST.get('client_id'))
+            except Application.DoesNotExist:
+                return Response({"data": "client_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_id = user.pk
+
+            access_token = AccessToken.objects.filter(
+                application_id=application.id,
+                user_id=user_id
+            )
+            if access_token.count() > 0:
+                last_token = access_token.order_by('-id')[0]
+                acctoken = last_token.token
+            else:
+                # create new token
+                acctoken = UserManager().createCustomAccessToken(pw_length=30)
+                now_plus_years = datetime.datetime.now(timezone('UTC')) + datetime.timedelta(days=(1*365))
+                access_token = AccessToken(
+                    token=acctoken,
+                    expires=now_plus_years,
+                    scope='read write',
+                    application_id=application.id,
+                    user_id=user_id,
+                )
+                access_token.save()
+            # import ipdb;ipdb.set_trace()
+
+            return Response({
+              "access_token": acctoken,
+              "token_type": "Bearer",
+              "expires_in": 36000,
+              "refresh_token": None,
+              "scope": "read write"
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Login by email
+class UserEmailRegister(APIView):
+
+    # permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+
+        acctoken = UserManager().createCustomAccessToken(pw_length=30)
 
         # user = self.get_object(pk)
-        serializer = UserLoginPassSerializer( data=request.data, context={'data': request.POST.get('password')})
+        serializer = UserRegisterPassSerializer(data=request.data, context={'data': request.POST.get('password')})
         if serializer.is_valid():
 
             # Check is email unique
 
-            if User.objects.filter(email=request.POST.get('email')).count() >0 :
+            if User.objects.filter(email=request.POST.get('email')).count() > 0:
                 return Response({"data": "email: "+request.POST.get('email')+" already exist."}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check is username unique
 
-            if User.objects.filter(username=request.POST.get('username')).count() >0 :
+            if User.objects.filter(username=request.POST.get('username')).count() > 0:
                 return Response({"data": "username: "+request.POST.get('username')+" already exist."}, status=status.HTTP_400_BAD_REQUEST)
-
 
             # Find client app
             try:
