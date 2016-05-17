@@ -69,17 +69,17 @@ class UserEmailLogin(APIView):
             try:
                 user = User.objects.get(email=request.POST.get('email'))
             except User.DoesNotExist:
-                return Response({"data": "email: "+request.POST.get('email')+" not found."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"data": "email not found."})
 
             # Check is password correct unique
             if user.check_password(request.POST.get('password')) is False:
-                return Response({"data": "password is not correct."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"data": "password is not correct."})
 
             # Find client app
             try:
                 application = Application.objects.get(client_id=request.POST.get('client_id'))
             except Application.DoesNotExist:
-                return Response({"data": "client_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"data": "client_id is required."})
 
             user_id = user.pk
 
@@ -130,19 +130,19 @@ class UserEmailRegister(APIView):
             # Check is email unique
 
             if User.objects.filter(email=request.POST.get('email')).count() > 0:
-                return Response({"data": "email: "+request.POST.get('email')+" already exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"data": "email already exist."})
 
             # Check is username unique
 
             if User.objects.filter(username=request.POST.get('username')).count() > 0:
-                return Response({"data": "username: "+request.POST.get('username')+" already exist."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"data": "username already exist."})
 
             # Find client app
             try:
                 application = Application.objects.get(client_id=request.POST.get('client_id'))
 
             except Application.DoesNotExist:
-                return Response({"data": "client_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"data": "client_id is required."})
 
             serializer.save()
             # import ipdb;ipdb.set_trace()
