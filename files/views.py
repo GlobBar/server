@@ -18,7 +18,7 @@ from report.report_manager import ReportManager
 from places.models import Place
 from notification.notification_manager import NotificationManager
 from points.points_manager import PointManager
-
+import requests
 
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser,)
@@ -285,6 +285,18 @@ class ConvertTokenViewCustom(ConvertTokenView):
                 pass
 
         elif backend == 'facebook':
+            fb_token = user_soc_auth.extra_data['access_token']
+
+            # Get email from facebook
+            resp = requests.get('https://graph.facebook.com/me?fields=email&access_token='+fb_token).json()
+            try:
+                fb_email = resp['email']
+                user.email = fb_email
+                user.save()
+            except KeyError:
+                pass
+
+            # Get avatar from facebook
             try:
                 url ='http://graph.facebook.com/'+user_soc_auth.uid+'/picture?type=large'
                 profile_picture_url = url

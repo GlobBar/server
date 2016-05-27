@@ -5,6 +5,8 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.db import connection
 from notification.notification_manager import NotificationManager
+from django.conf import settings
+
 
 # For single messages from User to User
 class Messages(models.Model):
@@ -33,6 +35,19 @@ class NewsMessages(models.Model):
         verbose_name_plural = "News"
 
 
+# For single messages from User to User
+class EmailMessage(models.Model):
+    user_to = models.ForeignKey(User, null=True, blank=True, help_text="Choose an user id, or empty to send all")
+    subject  = models.CharField(max_length=255, blank=False, default='')
+    text = models.TextField(blank=False, )
+    is_sent = models.IntegerField(null=True, blank=True, default=1)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('-id',)
+        verbose_name = "Email"
+        verbose_name_plural = "Emails"
+
 # method for updating
 @receiver(post_save, sender=NewsMessages, dispatch_uid="create_all_users_message")
 def update_stock(sender, instance, **kwargs):
@@ -54,9 +69,51 @@ def update_stock(sender, instance, **kwargs):
     cursor.executemany("insert into `user_messages_messages` (title, body, user_to, created) values (%s, %s, %s, %s)", newLanguages)
 
     # Send notifications
-    push_users = users[:50]
+    push_users = users[:2000] #ToDo cron tasks
     notify_manager = NotificationManager()
     notify_manager.send_news_notify(push_users)
+
+
+# method for send emails to all
+@receiver(post_save, sender=EmailMessage, dispatch_uid="create_all_users_emails")
+def update_emails(sender, instance, **kwargs):
+
+    import sendgrid
+    from django.template import loader
+
+    if instance.user_to is None:
+        users = User.objects.filter(is_active=True)[:2000] #ToDo cron tasks
+    else:
+        users = User.objects.filter(is_active=True, pk=instance.user_to.pk)
+
+    user_emails = []
+    for usr in users:
+        if usr.email is not None and len(usr.email) > 10:
+            user_emails += [usr.email]
+
+
+    # APIkey
+    sg = sendgrid.SendGridClient(settings.SEND_GRID_API_KEY)
+    context = {
+        'userName': 'testUser',
+        'text': instance.text,
+        'subject': instance.subject
+    }
+
+    body_html = loader.get_template('notification/emails/simple_email.html').render(context)
+
+    message = sendgrid.Mail(
+        to=user_emails,
+        subject=instance.subject,
+        html=body_html,
+        text='Body',
+        from_email='info@globbar.com')
+    status, msg = sg.send(message)
+
+    # import ipdb;ipdb.set_trace()
+
+
+
 
 
 

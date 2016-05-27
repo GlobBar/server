@@ -5,9 +5,10 @@ from notification.models import DevToken
 from rest_framework import status
 from pushy.models import Device
 from notification_manager import NotificationManager
-
+import random, string
 
 class NotificationList(APIView):
+
 
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -86,3 +87,30 @@ class NotificationList(APIView):
         # ssl_sock.close()
 
         return Response({'data': 'Token was successfully SENT.'})
+
+
+
+class MailSending(APIView):
+
+    def post(self, request, format=None):
+        import sendgrid
+        from django.template import loader
+
+        # APIkey
+        sg = sendgrid.SendGridClient('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')
+
+        ran_str = ''.join(random.choice(string.lowercase) for i in range(20))
+
+        context = {
+            'userName': 'testUser',
+            'ran_str': ran_str,
+        }
+
+        body_html = loader.get_template('notification/emails/test_email.html').render(context)
+
+        message = sendgrid.Mail(to=['ermine.kostya@gmail.com', 'ermine.kostya1@gmail.com'], subject='Example', html=body_html, text='Body',
+                                from_email='doe@email.com')
+        status, msg = sg.send(message)
+        # print(status, msg)
+
+        return Response(body_html)
