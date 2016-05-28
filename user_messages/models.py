@@ -86,12 +86,6 @@ def update_emails(sender, instance, **kwargs):
     else:
         users = User.objects.filter(is_active=True, pk=instance.user_to.pk)
 
-    user_emails = []
-    for usr in users:
-        if usr.email is not None and len(usr.email) > 10:
-            user_emails += [usr.email]
-
-
     # APIkey
     sg = sendgrid.SendGridClient(settings.SEND_GRID_API_KEY)
     context = {
@@ -102,18 +96,14 @@ def update_emails(sender, instance, **kwargs):
 
     body_html = loader.get_template('notification/emails/simple_email.html').render(context)
 
-    message = sendgrid.Mail(
-        to=user_emails,
-        subject=instance.subject,
-        html=body_html,
-        text='Body',
-        from_email='info@globbar.com')
-    status, msg = sg.send(message)
 
-    # import ipdb;ipdb.set_trace()
-
-
-
-
-
+    for usr in users:
+        if usr.email is not None and len(usr.email) > 10:
+            message = sendgrid.Mail(
+                to=usr.email,
+                subject=instance.subject,
+                html=body_html,
+                text='Body',
+                from_email='globbar.info@globbar.com')
+            status, msg = sg.send(message)
 
