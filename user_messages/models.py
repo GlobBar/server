@@ -104,6 +104,6 @@ def update_emails(sender, instance, **kwargs):
                 subject=instance.subject,
                 html=body_html,
                 text='Body',
-                from_email='newsletter@partyzhere.com')
+                from_email='globbar.info@partyzhere.com')
             status, msg = sg.send(message)
 
