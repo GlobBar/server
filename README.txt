@@ -17,6 +17,10 @@
 5. Install dependencies  pip install -r requirements.txt
 
 6. Now sync your database for the first time: python manage.py migrate
+
 7. We'll also create an initial user named admin with a password of password123. We'll authenticate as that user later in our example.
    python manage.py createsuperuser
-8. got to http://mysyte.com    (login: admin, password: password123)
+
+8. Start server - <dev style="background-color: black;">python manage.py runserver</dev>
+
+9. got to http://mysyte.com    (login: admin, password: password123)
