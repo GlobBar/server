@@ -59,7 +59,7 @@ class RequestRelation(RelationAbstract):
             # Get notification strategy
             notification_sender = NotificationManager().get_notification_strategy(device)
             # Send message
-            notification_sender.set_device_token(device.key).set_title('You have '+cnt+' new following requests. Manage the requests?').set_data({'type': 1}).send_message()
+            notification_sender.set_device_token(device.key).set_title('You have few new following requests. Manage the requests?').set_data({'type': 1}).send_message()
 
             # Sign relations as pushed
             for rel in requsts:
