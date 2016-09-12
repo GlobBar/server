@@ -55,7 +55,7 @@ class RequestRelation(RelationAbstract):
             pass
 
         # import ipdb; ipdb.set_trace()
-        if requsts.count() > int(cnt):
+        if requsts.count() >= int(cnt):
             # Get notification strategy
             notification_sender = NotificationManager().get_notification_strategy(device)
             # Send message
