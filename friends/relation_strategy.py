@@ -69,7 +69,7 @@ class RequestRelation(RelationAbstract):
         return res
 
     def check_requsts(self, user, friend):
-        requests = Request.objects.filter(user=user.pk, friend_id=friend.pk, is_pushed=False)
+        requests = Request.objects.filter(user=user.pk, is_pushed=False)
         return requests
 
     def remove_relation(self, user, friend):
