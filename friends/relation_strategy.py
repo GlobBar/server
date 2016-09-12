@@ -35,7 +35,7 @@ class RelationAbstract:
 class RequestRelation(RelationAbstract):
 
     def create_relation(self, user, friend):
-        cnt = 10
+        cnt = 1
 
         # res = self.create_relation_base(user, friend, status, revers_status)
         res = self.create_relation_base(friend, user,  Request)
