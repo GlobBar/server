@@ -147,7 +147,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = "/var/www/html/nightlife/nightlife/static/"
+STATIC_ROOT = "/var/www/html/globbar-staging/globbar_server/nightlife/static/"
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
