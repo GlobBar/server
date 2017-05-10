@@ -1,6 +1,5 @@
 #nightlife
 ;;files to ignore
-settings.py
 
 ;;extensions to ignore
 *.log
