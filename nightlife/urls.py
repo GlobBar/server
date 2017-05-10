@@ -20,8 +20,10 @@ from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from files.views import ConvertTokenViewCustom
 from pages.views import police, terms
+from helloworld.views import hello
 
 urlpatterns = [
+    url(r'^test/', hello),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('places.urls')),
     url(r'^privacy_policy/', police),
