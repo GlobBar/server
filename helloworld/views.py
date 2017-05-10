@@ -4,4 +4,4 @@ def hello(request):
 
     a = "hello"
 
-    return HttpResponse("Hello world" + a)
+    return HttpResponse("Hello world, guys")
