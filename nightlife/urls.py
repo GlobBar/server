@@ -43,6 +43,7 @@ urlpatterns = [
                                 'document_root': settings.MEDIA_ROOT,
                                 }),
 
+    url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
@@ -57,7 +58,7 @@ from social.apps.django_app.default.models import Association, Nonce, UserSocial
 
 admin.site.unregister(Group)
 admin.site.unregister(AccessToken)
-admin.site.unregister(Application)
+#admin.site.unregister(Application)
 admin.site.unregister(Grant)
 admin.site.unregister(RefreshToken)
 
