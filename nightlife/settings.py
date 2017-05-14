@@ -100,9 +100,9 @@ WSGI_APPLICATION = 'nightlife.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nightlife_stg',
-        'USER': 'newuser',
-        'PASSWORD': 'datest',
+        'NAME': 'nightlife',
+        'USER': 'root',
+        'PASSWORD': '218bae4f22133d56',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }
@@ -147,7 +147,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = "/var/www/html/globbar-staging/globbar_server/nightlife/static/"
+STATIC_ROOT = "/var/www/html/nightlife/nightlife/static/"
+#STATIC_ROOT = "/var/www/html/globbar-staging/globbar_server/nightlife/static/"
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
