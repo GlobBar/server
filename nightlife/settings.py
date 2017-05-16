@@ -200,7 +200,7 @@ SOCIAL_AUTH_INSTAGRAM_SECRET = '2a1b998d7e3747ee88ce619c20667676'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-SITE_DOMAIN = 'http://127.0.0.1:8000'
+SITE_DOMAIN = 'https://globbar.partyzhere.com'
 IMAGEKIT_CACHEFILE_DIR = os.path.join(BASE_DIR, 'media')
 
 # PUSH
