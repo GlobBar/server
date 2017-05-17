@@ -1,4 +1,3 @@
-import report
 from places.models import Place, Checkin, Like
 from places.serializers import PlaceSerializer, CheckinSerializer, LikeSerializer, PlaceDetailSerializer
 from places.place_repository import PlaceRepository
@@ -15,13 +14,11 @@ import pytz
 from points.points_manager import PointManager
 from notification.notification_manager import NotificationManager
 from pytz import timezone
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.db.models import Count, Min, Sum, Avg
 from report.models import Report
 from report.report_manager import ReportManager
-
-from django.utils import timezone
 
 class SnippetList(APIView):
 
