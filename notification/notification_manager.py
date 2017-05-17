@@ -62,7 +62,7 @@ class NotificationManager:
 
         # Set expired date , before this date system can't send push notification about your saved place is hot tonight
         # So user get this kind of notify just one's a day
-        place.last_push_expired = report_manager.get_place_last_push_expired(place)
+        place.last_push_expired = report_manager.get_expired_time(place.city)
         place.save()
         return True
 

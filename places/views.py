@@ -1,3 +1,4 @@
+import report
 from places.models import Place, Checkin, Like
 from places.serializers import PlaceSerializer, CheckinSerializer, LikeSerializer, PlaceDetailSerializer
 from places.place_repository import PlaceRepository
@@ -11,12 +12,16 @@ from city.serializers import CitySerializer
 from report.serializers import ReportForListSerializer
 from report.models import ReportImageLike
 import pytz
-from places.check_in_manager import CheckInManager
 from points.points_manager import PointManager
 from notification.notification_manager import NotificationManager
 from pytz import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from django.db.models import Count, Min, Sum, Avg
+from report.models import Report
+from report.report_manager import ReportManager
+
+from django.utils import timezone
 
 class SnippetList(APIView):
 
@@ -24,18 +29,19 @@ class SnippetList(APIView):
 
     def get(self, request, format=None):
         user_id = str(request.user.pk)
+
         limitFrom = str(request.GET.get('limit_from'))
         limitCount = str(request.GET.get('limit_count'))
+        if limitFrom == 'None':
+            limitFrom = '0'
+        if limitCount == 'None':
+            limitCount = '100000'
+
 
         latitude = str(request.GET.get('latitude'))
         longitude = str(request.GET.get('longitude'))
 
         filter_city = str(request.GET.get('filter_city'))
-
-        if limitFrom == 'None':
-            limitFrom = '0'
-        if limitCount == 'None':
-            limitCount = '100000'
 
         if latitude == 'None':
             return Response({'error': ('Invalid or missing perameter latitude in u request')}, status=status.HTTP_400_BAD_REQUEST)
@@ -133,6 +139,98 @@ class SnippetList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class VenueListView(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+
+        limitFrom = str(0)#str(request.GET.get('limit_from'))
+        limitCount = str(100)#str(request.GET.get('limit_count'))
+
+        latitude = str(request.GET.get('latitude'))
+        longitude = str(request.GET.get('longitude'))
+        filter_city = request.GET.get('city_id')
+
+        if (latitude == 'None') or (longitude == 'None'):
+            return Response({'error': ('Missing coordinates in request')}, status=status.HTTP_400_BAD_REQUEST)
+
+        if (filter_city == 'None'):
+            return Response({'error': ('Missing city reference in request')}, status=status.HTTP_400_BAD_REQUEST)
+
+        #topPlace
+
+        city = City.objects.get(pk=filter_city)
+        if city is None:
+            return Response({'error': ('Missing invalid city id')}, status=status.HTTP_400_BAD_REQUEST)
+
+        manager = ReportManager()
+        today_end = manager.get_expired_time(city)
+        today_start = today_end - timedelta(days=1)
+
+        #one club should be on top of the list
+        #this club has most reports for today
+        #in case 2 clubs have equal amount => hot is the one that got most reports earlier
+        #in case no reports left => no club is the top
+        maybe_top_club = Place.objects\
+            .filter(city_id=filter_city)\
+            .filter(report__created__range=[today_start,today_end])\
+            .annotate(reportsNumber=Count('report'))\
+            .order_by('-reportsNumber', 'created_lst_rpt')\
+            .first()
+
+        filter_top_query = ''
+        if maybe_top_club is not None:
+            filter_top_query = 'AND places_place.id <> '+str(maybe_top_club.pk)
+
+        places = Place.objects.raw(
+            'SELECT '
+                'places_place.id , '
+                'places_place.city_id , '
+                'places_place.title, '
+                'places_place.address, '
+                'places_place.description, '
+                'places_place.enable, '
+                'places_place.created, '
+                'places_place.created_lst_rpt, '
+                'places_place.latitude, '
+                'places_place.longitude, '
+                'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
+                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                'AS distance '
+
+            'FROM places_place '
+            'WHERE places_place.city_id = '+str(filter_city)+' '+filter_top_query+' '
+            'GROUP BY places_place.id '
+            'ORDER BY distance ASC '
+            'LIMIT '+limitFrom+', '+limitCount+''
+        )
+
+        if maybe_top_club:
+            places = [maybe_top_club] + list(places)
+
+        # My likes
+        my_like_place_pks = []
+        my_likes = Like.objects.filter(user=request.user)
+        if my_likes.count() > 0:
+            for i in my_likes:
+                my_like_place_pks += [str(i.place.pk)]
+
+        # My check ins
+        my_checin = Checkin.objects.filter(user=request.user, active=True).first()
+        if my_checin is None:
+            my_check_in = None
+        else:
+            my_check_in = my_checin.place.pk
+
+        serializer = PlaceSerializer(places, many=True, context={
+            'my_check_in': my_check_in,
+            'my_check_in_entity': my_check_in ,
+            'my_like_place_pks': my_like_place_pks
+        })
+
+        return Response({ 'places': serializer.data })
 
 class NearestSnippetList(APIView):
 
@@ -449,8 +547,8 @@ class CheckinList(APIView):
                 notify_manager.send_check_in_notify(checkin)
 
 
-            manager = CheckInManager()
-            expired_time = manager.get_expired_time(checkin)
+            manager = ReportManager()
+            expired_time = manager.get_expired_time(checkin.place.city)
 
             checkin.expired = expired_time
             checkin.created = datetime.now()

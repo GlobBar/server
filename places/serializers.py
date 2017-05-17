@@ -4,10 +4,10 @@ from django.conf import settings
 from django.db.models.functions import Lower
 from apiusers.serializers import LastUsersSerializer
 from datetime import date, datetime, time
-from places.check_in_manager import CheckInManager
 from pytz import timezone
 from datetime import datetime, timedelta
 
+from report.report_manager import ReportManager
 
 class PlaceDetailSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -124,10 +124,13 @@ class PlaceSerializer(serializers.Serializer):
     address = serializers.CharField(required=True, allow_blank=True, max_length=100)
     description = serializers.CharField(style={'base_template': 'textarea.html'})
     enable = serializers.BooleanField(required=False)
+
     created = serializers.DateTimeField()
     created_lst_rpt = serializers.DateTimeField()
+
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=6)
+
     place_image = serializers.SerializerMethodField()
     place_logo = serializers.SerializerMethodField()
     distance = serializers.SerializerMethodField()
@@ -300,8 +303,8 @@ class CheckinSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         check_in = super(CheckinSerializer, self).save(**kwargs)
-        check_in_manager = CheckInManager()
-        check_in.expired = check_in_manager.get_expired_time(check_in)
+        manager = ReportManager()
+        check_in.expired = manager.get_expired_time(check_in.place.city)
 
         return check_in.save()
 

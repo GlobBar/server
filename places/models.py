@@ -6,23 +6,36 @@ from datetime import datetime, timedelta
 
 
 class Place(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    last_push_expired = models.DateTimeField(auto_now_add=True)
-    created_lst_rpt = models.DateTimeField(blank=True, null=True)
+
+    #describing
     title = models.CharField(max_length=100, blank=False, default='')
+    address = models.CharField(max_length=250, blank=True, default='')
+    description = models.TextField()
+
+    #metadata
     opening_hours = models.CharField(max_length=100, blank=True, default='')
     music_type = models.CharField(max_length=100, blank=True, default='')
     age_group = models.CharField(max_length=100, blank=True, default='')
-    address = models.CharField(max_length=250, blank=True, default='')
-    description = models.TextField()
-    enable = models.BooleanField(default=True)
-    is_partner = models.BooleanField(default=False)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=False, null=True)
-    longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=False, null=True)
+
+    #assets
     image = models.FileField(upload_to='place/%Y/%m/%d', blank=False, null=True, help_text='JPEG images only')
     logo = models.FileField(upload_to='place_logo/%Y/%m/%d', blank=False, null=True, help_text='JPEG images only')
-    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=False)
 
+    #date related
+    created = models.DateTimeField(auto_now_add=True)
+    last_push_expired = models.DateTimeField(auto_now_add=True)
+    created_lst_rpt = models.DateTimeField(blank=True, null=True)
+
+    #booleans
+    enable = models.BooleanField(default=True)
+    is_partner = models.BooleanField(default=False)
+
+    #location
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=False, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6, blank=False, null=True)
+
+    #foreign keys
+    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=False)
 
     def clean(self):
         import re

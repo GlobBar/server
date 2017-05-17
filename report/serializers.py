@@ -113,7 +113,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
         # Set expired date
         report_manager = ReportManager()
-        expired_utc = report_manager.get_expired_time(report)
+        expired_utc = report_manager.get_expired_time(report.place.city)
         report.expired = expired_utc
 
         report.save()
