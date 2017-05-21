@@ -192,9 +192,9 @@ class VenueListView(APIView):
                 'places_place.created_lst_rpt, '
                 'places_place.latitude, '
                 'places_place.longitude, '
-                'ROUND(( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
+                '( 6371 * acos( cos( radians('+latitude+') ) * cos( radians( latitude ) ) * '
                 'cos( radians( longitude ) - radians('+longitude+') ) + sin( radians('+latitude+') ) '
-                '* sin( radians( latitude ) ) ) ) * 1000 / 1609.34, 1) '
+                '* sin( radians( latitude ) ) ) ) * 1000 '
                 'AS distance '
 
             'FROM places_place '
