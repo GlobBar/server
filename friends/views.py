@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from friends.relation_strategy import FriendRelation, RequestRelation, FollowingRelation, FollowerRelation
-from friends.models import Relation
+from friends.models import Relation, Request
 from friends.serializers import RelationSerializer, FollowerSerializer
 
 
@@ -170,3 +170,13 @@ class RequestsList(APIView):
 
         serializer = RelationSerializer(requests, many=True)
         return Response(serializer.data)
+
+class RequestsCountView(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, format=None):
+
+        requests_count = Request.objects.filter(user=request.user.pk, is_pushed=False).count()
+
+        return Response({'data': requests_count}, status=status.HTTP_200_OK)
