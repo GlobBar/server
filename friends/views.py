@@ -177,6 +177,6 @@ class RequestsCountView(APIView):
 
     def get(self, request, format=None):
 
-        requests_count = Request.objects.filter(user=request.user.pk, is_pushed=False).count()
+        requests_count = Request.objects.filter(user=request.user.pk).count()
 
         return Response({'data': requests_count}, status=status.HTTP_200_OK)
