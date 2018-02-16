@@ -81,6 +81,7 @@ class UserDetailSerializer(serializers.Serializer):
     followings_count = serializers.SerializerMethodField()
     current_relation = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
+    balance = serializers.SerializerMethodField()
 
 
     def get_points_count(self, obj):
@@ -92,6 +93,18 @@ class UserDetailSerializer(serializers.Serializer):
 
         exist_points = point_count.points
         return exist_points
+
+    def get_balance(self, obj):
+        try:
+            point_count = PointsCount.objects.get(user=obj)
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, balance=0, user=obj)
+            point_count.save()
+
+        balance = point_count.balance
+        if balance is None:
+            balance = 0
+        return balance
 
     # last_reports = serializers.SerializerMethodField()
     #

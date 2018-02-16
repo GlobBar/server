@@ -27,4 +27,5 @@ class PointsCount(models.Model):
     updated = models.DateTimeField(auto_now_add=True)
     enable = models.BooleanField(default=True)
     points = models.IntegerField(null=True, blank=True)
+    balance = models.IntegerField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
