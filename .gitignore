@@ -13,3 +13,7 @@ nightlifeenv/
 nightlife/static/
 media/
 
+nightlife/settings.py
+nightlife.wsgi
+nightlife.wsgiy
+nightlifeenv2/
