@@ -23,4 +23,4 @@
 
 8. Start server - python manage.py runserver
 
-9. got to http://mysyte.com    (login: admin, password: password123)
+9. got to http://mysyte.com    (login: admin, password: password123).
