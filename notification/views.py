@@ -5,6 +5,7 @@ from notification.models import DevToken
 from rest_framework import status
 from pushy.models import Device
 from notification_manager import NotificationManager
+from django.conf import settings
 import random, string
 
 class NotificationList(APIView):
@@ -97,7 +98,7 @@ class MailSending(APIView):
         from django.template import loader
 
         # APIkey
-        sg = sendgrid.SendGridClient('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')
+        sg = sendgrid.SendGridClient(settings.SEND_GRID_API_KEY)
 
         ran_str = ''.join(random.choice(string.lowercase) for i in range(20))
 
