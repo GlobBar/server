@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from django.contrib.auth.models import User, Group
 from apiusers.serializers import UserDetailSerializer
-from points.models import PointsCount
+from points.models import PointsCount, Transactions
 from points.serializers import PointSerializer
 from pytz import timezone
 from datetime import datetime
@@ -136,3 +136,20 @@ class BalanceDonate(APIView):
             point_count.save()
 
         return point_count
+
+
+class CashOut(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        user = request.user
+        amount = request.POST.get('amount')
+        finance_email = request.POST.get('email')
+        if 'amount' not in request.POST.keys() or 'email' not in request.POST.keys():
+            return Response({'error': ('Cant find required parameters (amount, email) !')}, status=status.HTTP_400_BAD_REQUEST)
+
+        transaction = Transactions(finance_email=finance_email, amount=int(amount), user=user)
+        transaction.save()
+
+        return Response({"data": "Transaction has been successfully created."}, status=status.HTTP_200_OK)
