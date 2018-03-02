@@ -104,3 +104,19 @@ class NotificationManager:
                 pass
 
         return True
+
+    # Donate notifications
+    def send_donate_notify(self, user, message):
+        notification_manager = NotificationManager()
+
+        try:
+            device = Device.objects.get(user=user)
+            # Get notification strategy
+            notification_sender = notification_manager.get_notification_strategy(device)
+            # Send message
+            notification_sender.set_device_token(device.key).set_title(message).set_data(
+                {'type': 6}).send_message()
+        except Device.DoesNotExist:
+            pass
+
+        return True

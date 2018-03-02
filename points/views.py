@@ -3,13 +3,14 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from django.contrib.auth.models import User, Group
 from apiusers.serializers import UserDetailSerializer
-from points.models import PointsCount, Transactions
+from points.models import PointsCount, Transactions, FeeSize
 from points.serializers import PointSerializer
 from pytz import timezone
 from datetime import datetime
 from rest_framework import status
 from django.http import Http404
 from user_messages.models import Messages
+from notification.notification_manager import NotificationManager
 
 
 class PointsList(APIView):
@@ -86,7 +87,6 @@ class BalanceUp(APIView):
         return Response({"data": "Users balance has been successfully updated."}, status=status.HTTP_200_OK)
 
 
-
 class BalanceDonate(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
@@ -109,6 +109,8 @@ class BalanceDonate(APIView):
         if balance_delta > current_user_point_count.balance:
             return Response({'error': ('You try to spent more maney then you have !')}, status=status.HTTP_400_BAD_REQUEST)
 
+        fee_size = 1 - (FeeSize.objects.all()[0] / 100)
+        balance_delta = balance_delta * fee_size
         # Update balance
         now_utc = datetime.now(timezone('UTC'))
         point_count.balance = point_count.balance + balance_delta
@@ -123,6 +125,10 @@ class BalanceDonate(APIView):
         body = current_user.username+' donated you '+str(float(balance_delta)/100)+'$'
         message = Messages(title='Balance update', body=body, user_from=current_user, user_to=user.id, created=now_utc, is_readed=0)
         message.save()
+
+        # Send notifications
+        notify_manager = NotificationManager()
+        notify_manager.send_donate_notify(user, body)
 
         return Response({"data": "Users balance has been successfully updated."}, status=status.HTTP_200_OK)
 
@@ -149,7 +155,14 @@ class CashOut(APIView):
         if 'amount' not in request.POST.keys() or 'email' not in request.POST.keys():
             return Response({'error': ('Cant find required parameters (amount, email) !')}, status=status.HTTP_400_BAD_REQUEST)
 
+        user_point_count = BalanceDonate.poin_count_by_user(user)
+        if amount > user_point_count.balance:
+            return Response({'error': ('You try to cash out more maney then you have !')}, status=status.HTTP_400_BAD_REQUEST)
+
         transaction = Transactions(finance_email=finance_email, amount=int(amount), user=user)
         transaction.save()
 
+        user_point_count.balance = user_point_count.balance - amount
+        user_point_count.save()
+        
         return Response({"data": "Transaction has been successfully created."}, status=status.HTTP_200_OK)
