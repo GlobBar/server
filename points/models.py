@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
 
 # Type of points and count of balls
 class PointType(models.Model):
@@ -30,7 +30,11 @@ class PointsCount(models.Model):
 
 # FeeSize
 class FeeSize(models.Model):
-    fee = models.DecimalField(max_digits=10, decimal_places=2, blank=False, default=0,)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, blank=False, default=0,
+        validators=[
+            MaxValueValidator(100),
+            MinValueValidator(0)
+        ])
 
 # Transactions
 class Transactions(models.Model):
