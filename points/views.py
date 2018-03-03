@@ -164,5 +164,3 @@ class CashOut(APIView):
 
         user_point_count.balance = user_point_count.balance - amount
         user_point_count.save()
-        
-        return Response({"data": "Transaction has been successfully created."}, status=status.HTTP_200_OK)
