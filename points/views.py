@@ -148,14 +148,25 @@ class CashOut(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
+    def poin_count_by_user(self, user):
+        try:
+            point_count = PointsCount.objects.get(user=user)
+            if point_count.balance is None:
+                point_count.balance = 0
+        except PointsCount.DoesNotExist:
+            point_count = PointsCount(points=0, balance=0, user=user)
+            point_count.save()
+
+        return point_count
+
     def post(self, request, format=None):
         user = request.user
-        amount = request.POST.get('amount')
+        amount = int(request.POST.get('amount'))
         finance_email = request.POST.get('email')
         if 'amount' not in request.POST.keys() or 'email' not in request.POST.keys():
             return Response({'error': ('Cant find required parameters (amount, email) !')}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_point_count = BalanceDonate.poin_count_by_user(user)
+        user_point_count = self.poin_count_by_user(user)
         if amount > user_point_count.balance:
             return Response({'error': ('You try to cash out more maney then you have !')}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -164,3 +175,6 @@ class CashOut(APIView):
 
         user_point_count.balance = user_point_count.balance - amount
         user_point_count.save()
+
+        return Response({"data": "Users balance has been successfully updated."}, status=status.HTTP_200_OK)
+
