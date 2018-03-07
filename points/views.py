@@ -108,8 +108,7 @@ class BalanceDonate(APIView):
         point_count = self.poin_count_by_user(user)
         if balance_delta > current_user_point_count.balance:
             return Response({'error': ('You try to spent more maney then you have !')}, status=status.HTTP_400_BAD_REQUEST)
-
-        fee_size = 1 - (FeeSize.objects.all()[0] / 100)
+        fee_size = 1 - (FeeSize.objects.all()[0].fee / 100)
         balance_delta = balance_delta * fee_size
         # Update balance
         now_utc = datetime.now(timezone('UTC'))
