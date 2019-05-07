@@ -14,8 +14,13 @@ class ReportManager():
         now_utc = datetime.now(timezone('UTC'))
 
         # Convert to US/Pacific time zone
-        zone_name = city.time_zone
-        now_with_zone = now_utc.astimezone(timezone(zone_name))
+        try:
+            zone_name = city.time_zone
+            now_with_zone = now_utc.astimezone(timezone(zone_name))
+
+        except AttributeError:
+            now_with_zone = now_utc.astimezone(timezone('UTC'))
+
         if now_with_zone.hour >= 6:
 
             # set next day 6:00
