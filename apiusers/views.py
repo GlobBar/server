@@ -13,6 +13,9 @@ from oauth2_provider.models import AccessToken, Application
 import datetime
 from pytz import timezone
 from apiusers.user_manager import UserManager
+from apiusers.serializers import ProfileSerializer
+from apiusers.serializers import UserType
+from apiusers.models import Profile
 
 class UserList(APIView):
     """
@@ -231,5 +234,20 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
 
 
+class ProfileList(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        try:
+            profile = Profile.objects.get(user=request.user.pk)
+        except Profile.DoesNotExist:
+            profile = None
+
+        serializer = ProfileSerializer(profile, data=request.data, context={'current_user': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -6,7 +6,14 @@ from django.conf import settings
 import os
 from friends.models import Relation, Follower, Following, Request
 from points.models import PointsCount
+from apiusers.models import Profile
 
+class UserType():
+    FAN = 0
+    DANCER = 1
+
+    def getUserTypeToArray(self):
+        return
 
 class UserSerializer(serializers.Serializer):
     pk = serializers.IntegerField(read_only=True)
@@ -14,6 +21,17 @@ class UserSerializer(serializers.Serializer):
     email = serializers.CharField(required=True, allow_blank=True, max_length=250)
     profile_image = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+
+    def get_type(self, obj):
+        try:
+            profile = Profile.objects.get(user=obj)
+        except Profile.DoesNotExist:
+            profile = Profile(type=UserType.FAN, user=obj)
+            profile.save()
+
+        type = profile.type
+        return type
 
     def get_points_count(self, obj):
         try:
@@ -82,7 +100,18 @@ class UserDetailSerializer(serializers.Serializer):
     current_relation = serializers.SerializerMethodField()
     points_count = serializers.SerializerMethodField()
     balance = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
 
+
+    def get_type(self, obj):
+        try:
+            profile = Profile.objects.get(user=obj)
+        except Profile.DoesNotExist:
+            profile = Profile(type=UserType.FAN, user=obj)
+            profile.save()
+
+        type = profile.type
+        return type
 
     def get_points_count(self, obj):
         try:
@@ -300,6 +329,33 @@ class UserLoginPassSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True, max_length=100)
     password = serializers.CharField(required=True, allow_blank=True, max_length=100)
     email = serializers.CharField(required=True, allow_blank=True, max_length=250)
+
+class ProfileSerializer(serializers.Serializer):
+    pk = serializers.IntegerField(read_only=True)
+    type = serializers.IntegerField(required=True)
+
+    def save(self, **kwargs):
+        profile = super(ProfileSerializer, self).save(**kwargs)
+        profile.user = self.context['current_user']
+
+        return profile.save()
+
+    def create(self, validated_data):
+        profile = Profile.objects.create(**validated_data)
+        profile.user = self.context['current_user']
+        return profile
+
+    def update(self, instance, validated_data):
+        instance.type = validated_data.get('type', instance.type)
+        instance.user = self.context['current_user']
+        instance.save()
+
+        return instance
+
+    def validate(self, data):
+        if data['type'] not in [UserType.FAN, UserType.DANCER]:
+            raise serializers.ValidationError("type in not available")
+        return data
 
 
 

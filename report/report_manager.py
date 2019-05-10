@@ -17,7 +17,6 @@ class ReportManager():
         try:
             zone_name = city.time_zone
             now_with_zone = now_utc.astimezone(timezone(zone_name))
-
         except AttributeError:
             now_with_zone = now_utc.astimezone(timezone('UTC'))
 
