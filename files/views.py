@@ -19,6 +19,7 @@ from places.models import Place
 from notification.notification_manager import NotificationManager
 from points.points_manager import PointManager
 import requests
+from apiusers.models import Profile
 
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser,)
@@ -127,6 +128,17 @@ class ReportFileUploadView(APIView):
         expired_utc = report_manager.get_expired_time(report)
         report.expired = expired_utc
 
+        try:
+            profile = Profile.objects.get(user=user)
+            # type1: dancer
+            if profile.type == 1:
+                report.price = 100
+                report.is_locked = True
+            else:
+                report.price = 0
+        except:
+            report.price = 0
+            
         report.save()
 
         #  Add points
@@ -204,6 +216,18 @@ class ReportVideoUploadView(APIView):
             place=place,
             report_image=report_image
         )
+
+        try:
+            profile = Profile.objects.get(user=user)
+            # type1: dancer
+            if profile.type == 1:
+                report.price = 100
+                report.is_locked = True
+            else:
+                report.price = 0
+        except:
+            report.price = 0
+
         report.save()
 
         # Set expired date
