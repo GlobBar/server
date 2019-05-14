@@ -204,7 +204,7 @@ class UserDetail(APIView):
         last_reports = Report.objects.filter(user_id=user.pk).order_by('-id')[0:3]
         res_reports_list = []
         for r in last_reports:
-            last_reports_seriolaser = ReportSerializer(r, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks}).data
+            last_reports_seriolaser = ReportSerializer(r, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request}).data
             res_reports_list += [last_reports_seriolaser]
 
         return Response({'user': serializer.data, 'last_reports': res_reports_list})

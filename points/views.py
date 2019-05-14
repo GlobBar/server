@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from django.contrib.auth.models import User, Group
 from apiusers.serializers import UserDetailSerializer
+from apiusers.balance_manager import BalanceManager
 from points.models import PointsCount, Transactions, FeeSize
+from report.models import Report, UsersWithUnlockedMedia
 from points.serializers import PointSerializer
 from pytz import timezone
 from datetime import datetime
@@ -109,10 +111,10 @@ class BalanceDonate(APIView):
         if balance_delta > current_user_point_count.balance:
             return Response({'error': ('You try to spent more maney then you have !')}, status=status.HTTP_400_BAD_REQUEST)
         fee_size = 1 - (FeeSize.objects.all()[0].fee / 100)
-        balance_delta = balance_delta * fee_size
+        balance_delta_minus_fee = balance_delta * fee_size
         # Update balance
         now_utc = datetime.now(timezone('UTC'))
-        point_count.balance = point_count.balance + balance_delta
+        point_count.balance = point_count.balance + balance_delta_minus_fee
         point_count.updated = now_utc
         point_count.save()
 
@@ -127,7 +129,7 @@ class BalanceDonate(APIView):
 
         # Send notifications
         notify_manager = NotificationManager()
-        notify_manager.send_donate_notify(user, body)
+        # notify_manager.send_donate_notify(user, body)
 
         return Response({"data": "Users balance has been successfully updated."}, status=status.HTTP_200_OK)
 
@@ -141,6 +143,43 @@ class BalanceDonate(APIView):
             point_count.save()
 
         return point_count
+
+class BalanceMediaDonate(APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        current_user = request.user
+        balance_manager = BalanceManager()
+
+        try:
+            report = Report.objects.get(pk=request.POST.get('report_pk'))
+            user = report.user
+        except Report.DoesNotExist:
+            raise Http404
+
+        if current_user.id == user.id:
+            return Response({'error': ('You try to donate your self !')}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        if report.is_locked == False:
+            return Response({'error': ('You try to donate free media item !')}, status=status.HTTP_400_BAD_REQUEST)
+
+        balance_delta = int(request.POST.get('amount'))
+        current_user_point_count = balance_manager.poin_count_by_user(current_user)
+        point_count = balance_manager.poin_count_by_user(user)
+        if balance_delta > current_user_point_count.balance:
+            return Response({'error': ('You try to spent more maney then you have !')},
+                            status=status.HTTP_400_BAD_REQUEST)
+        balance_manager.donate(point_count, balance_delta, current_user_point_count, current_user, user)
+
+        try:
+            UsersWithUnlockedMedia.objects.get(user=request.user, report=report)
+        except UsersWithUnlockedMedia.DoesNotExist:
+            users_with_unlocked_media = UsersWithUnlockedMedia(user=request.user, report=report, created=datetime.now(timezone('UTC')))
+            users_with_unlocked_media.save()
+
+        return Response({"data": "Users balance has been successfully updated."}, status=status.HTTP_200_OK)
 
 
 class CashOut(APIView):

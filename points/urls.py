@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^points/$', views.PointsList.as_view()),
     url(r'^users/me/balance/$', views.BalanceUp.as_view()),
     url(r'^users/donate/$', views.BalanceDonate.as_view()),
+    url(r'^users/media/donate/$', views.BalanceMediaDonate.as_view()),
     url(r'^points/transactions/cashout/$', views.CashOut.as_view()),
 ]
 

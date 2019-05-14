@@ -350,7 +350,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getMonthReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -370,7 +370,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getWeekReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -390,7 +390,7 @@ class SnippetDetail(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'pk': pk, 'frt': frt}
             hot_reports = PlaceRepository.getTodayReportsHot(placeRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -410,7 +410,7 @@ class SnippetDetail(APIView):
             hot_reports_result = []
         else:
             hot_reports_result = serializer_hot_reports.data
-        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True, context={'my_like_report_pks': my_like_report_pks})
+        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True, context={'my_like_report_pks': my_like_report_pks, 'request': request})
 
         place = self.get_object(pk)
         serializer_place = PlaceDetailSerializer(place, context={

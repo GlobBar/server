@@ -89,7 +89,7 @@ class ReportDetail(APIView):
                 my_like_report_pks += [str(i.report.pk)]
 
         snippet = self.get_object(pk)
-        serializer = ReportSerializer(snippet, context={'my_like_report_pks': my_like_report_pks})
+        serializer = ReportSerializer(snippet, context={'my_like_report_pks': my_like_report_pks, 'request': request})
         return Response(serializer.data)
 
 
@@ -177,7 +177,7 @@ class ReportsByPeriod(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
             hot_reports = ReportRepository.getTodayReportsHot(reportRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -203,7 +203,7 @@ class ReportsByPeriod(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
             hot_reports = ReportRepository.getWeekReportsHot(reportRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -229,7 +229,7 @@ class ReportsByPeriod(APIView):
             # Hot reports
             parameters = {'tz_delta': tz_delta, 'frt': frt, 'city_pk': city_pk}
             hot_reports = ReportRepository.getMonthReportsHot(reportRepoinst, parameters)
-            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks})
+            serializer_hot_reports = ReportForListSerializer(hot_reports, many=True, context={'is_hot': True, 'my_like_report_pks': my_like_report_pks, 'request': request})
 
             # Remove duplicates
             hot_data = self.getHotData(serializer_hot_reports)
@@ -258,7 +258,7 @@ class ReportsByPeriod(APIView):
             hot_reports_result = []
         else:
             hot_reports_result = serializer_hot_reports.data
-        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True, context={'my_like_report_pks': my_like_report_pks})
+        serializer_simple_reports = ReportForListSerializer(simple_reports, many=True, context={'my_like_report_pks': my_like_report_pks, 'request': request})
 
         return Response({
              'reports': hot_reports_result + serializer_simple_reports.data

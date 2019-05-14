@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 class Profile(models.Model):
-    user = models.place = models.OneToOneField(
+    user = models.OneToOneField(
         User,
         null=True
     )

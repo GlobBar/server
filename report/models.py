@@ -19,12 +19,13 @@ class Report(models.Model):
     gender_relation = models.IntegerField(null=True, blank=True)
     charge = models.IntegerField(null=True, blank=True)
     queue = models.IntegerField(null=True, blank=True)
-    type = models.IntegerField(default=0)  # 0 - report, 1 - picture
-
+    type = models.IntegerField(default=0)  # 0 - report, 1 - picture, 2 - video
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     place = models.ForeignKey(Place, on_delete=models.CASCADE, null=True, blank=True)
 
     report_image = models.ForeignKey(ReportImage, on_delete=models.CASCADE, null=True, blank=True)
+    is_locked = models.NullBooleanField(null=True, blank=True, default=0)
+    price = models.IntegerField(null=True, blank=True, default=0)
 
     class Meta:
         ordering = ('id',)
@@ -38,3 +39,8 @@ class ReportImageLike(models.Model):
 
     class Meta:
         ordering = ('id',)
+
+class UsersWithUnlockedMedia(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, null=True, blank=True)

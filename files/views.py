@@ -141,7 +141,7 @@ class ReportFileUploadView(APIView):
         notification_manager = NotificationManager()
         notification_manager.send_hot_plases_notify(report)
 
-        serializer = ReportSerializer(report, many=False)
+        serializer = ReportSerializer(report, many=False, context={'request': request})
 
         return Response(serializer.data)
 
@@ -159,7 +159,7 @@ class ReportFileUploadView(APIView):
             report.description = description
             report.save()
 
-        serializer = ReportSerializer(report, many=False)
+        serializer = ReportSerializer(report, many=False, context={'request': request})
         return Response(serializer.data)
 
 
@@ -225,7 +225,7 @@ class ReportVideoUploadView(APIView):
         notification_manager = NotificationManager()
         notification_manager.send_hot_plases_notify(report)
 
-        serializer = ReportSerializer(report, many=False)
+        serializer = ReportSerializer(report, many=False, context={'request': request})
 
         return Response(serializer.data)
 
@@ -243,7 +243,7 @@ class ReportVideoUploadView(APIView):
             report.description = description
             report.save()
 
-        serializer = ReportSerializer(report, many=False)
+        serializer = ReportSerializer(report, many=False, context={'request': request})
         return Response(serializer.data)
 
 

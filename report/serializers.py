@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from report.models import Report, ReportImageLike
+from report.models import Report, ReportImageLike, UsersWithUnlockedMedia
 from django.conf import settings
 from django.contrib.auth.models import User
 from apiusers.serializers import OwnerSerializer
+from apiusers.models import Profile
 from files.models import  ReportImage
 from report.report_manager import ReportManager
 import os
@@ -18,6 +19,19 @@ class ReportSerializer(serializers.ModelSerializer):
     like_cnt = serializers.SerializerMethodField()
     is_hot = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
+    price = serializers.IntegerField(required=False)
+    is_locked = serializers.SerializerMethodField()
+
+    def get_is_locked(self, obj):
+        if obj.is_locked == False:
+            return False
+        try:
+            UsersWithUnlockedMedia.objects.get(user=self.context['request'].user, report=obj)
+
+            return False
+        except UsersWithUnlockedMedia.DoesNotExist:
+
+            return True
 
     def get_is_liked(self, obj):
         try:
@@ -104,12 +118,25 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
                   'charge', 'queue', 'type', 'report_media', 'description', 'thumbnail', 'like_cnt', 'is_hot',
-                  'is_liked'
+                  'is_liked','is_locked','price'
                   )
 
     def save(self, **kwargs):
         report = super(ReportSerializer, self).save(**kwargs)
-        report.user = self.context['request'].user
+        user = self.context['request'].user
+        try:
+            profile = Profile.objects.get(user=user)
+            # type1: dancer
+            if profile.type == 1:
+                report.price = 100
+                report.is_locked = True
+            else:
+                report.price = 0
+        except:
+            report.price = 0
+
+        report.user = user
+
 
         # Set expired date
         report_manager = ReportManager()
@@ -164,6 +191,19 @@ class ReportForListSerializer(serializers.ModelSerializer):
     like_cnt = serializers.SerializerMethodField()
     is_hot = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
+    price = serializers.IntegerField()
+    is_locked = serializers.SerializerMethodField()
+
+    def get_is_locked(self, obj):
+        if obj.is_locked == False:
+            return False
+        try:
+            UsersWithUnlockedMedia.objects.get(user=self.context['request'].user, report=obj)
+
+            return False
+        except UsersWithUnlockedMedia.DoesNotExist:
+
+            return True
 
     def get_is_liked(self, obj):
         try:
@@ -275,4 +315,4 @@ class ReportForListSerializer(serializers.ModelSerializer):
         model = Report
         fields = ('pk', 'created', 'place', 'user', 'is_going', 'bar_filling', 'music_type', 'gender_relation',
                   'charge', 'queue', 'type', 'report_media', 'description', 'owner', 'thumbnail', 'like_cnt', 'is_hot',
-                  'is_liked')
+                  'is_liked','is_locked','price')
