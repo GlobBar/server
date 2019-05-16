@@ -24,13 +24,17 @@ class ReportSerializer(serializers.ModelSerializer):
     is_locked = serializers.SerializerMethodField()
 
     def get_is_locked(self, obj):
-        if obj.is_locked == False:
+        if obj.is_locked == 0:
             return False
+
+        if obj.user == self.context['request'].user.id:
+            return False
+
         try:
             UsersWithUnlockedMedia.objects.get(user=self.context['request'].user, report=obj)
 
             return False
-        except UsersWithUnlockedMedia.DoesNotExist:
+        except (UsersWithUnlockedMedia.DoesNotExist, Place.DoesNotExist) as e:
 
             return True
 
