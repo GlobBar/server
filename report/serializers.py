@@ -27,7 +27,7 @@ class ReportSerializer(serializers.ModelSerializer):
         if obj.is_locked == 0:
             return False
 
-        if obj.user == self.context['request'].user.id:
+        if obj.user == self.context['request'].user.id or obj.user == self.context['request'].user:
             return False
 
         try:
@@ -37,6 +37,8 @@ class ReportSerializer(serializers.ModelSerializer):
         except (UsersWithUnlockedMedia.DoesNotExist, Place.DoesNotExist) as e:
 
             return True
+
+        return True
 
     def get_is_liked(self, obj):
         try:
@@ -203,7 +205,7 @@ class ReportForListSerializer(serializers.ModelSerializer):
         if obj.is_locked == 0:
             return False
 
-        if obj.user == self.context['request'].user.id:
+        if obj.user == self.context['request'].user.id or obj.user == self.context['request'].user:
             return False
 
         try:
@@ -213,6 +215,8 @@ class ReportForListSerializer(serializers.ModelSerializer):
         except (UsersWithUnlockedMedia.DoesNotExist, Place.DoesNotExist) as e:
 
             return True
+
+        return True
 
     def get_is_liked(self, obj):
         try:
