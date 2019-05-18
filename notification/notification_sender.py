@@ -49,8 +49,9 @@ class IosSender(AbstractSender):
 
     def send_message(self):
 
-        import socket, ssl, json, struct
+        import socket, json, struct
         import binascii
+        import backports.ssl as ssl
 
         deviceToken = str(self.device_token)
 
