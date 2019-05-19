@@ -51,7 +51,7 @@ class IosSender(AbstractSender):
 
         import socket, json, struct
         import binascii
-        import backports.ssl as ssl
+        import backports.ssl
 
         deviceToken = str(self.device_token)
 
@@ -73,11 +73,14 @@ class IosSender(AbstractSender):
         theFormat = '!BH32sH%ds' % len(data)
         theNotification = struct.pack(theFormat, 0, 32, byteToken, len(data), data)
         # import ipdb;ipdb.set_trace()
-        ssl_sock = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), certfile=theCertfile)
-        ssl_sock.connect(theHost)
-        ssl_sock.write(theNotification)
-        ssl_sock.close()
-
+        try:
+            ssl_sock = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), certfile=theCertfile)
+            ssl_sock.connect(theHost)
+            ssl_sock.write(theNotification)
+            ssl_sock.close()
+        except:
+            ssl_sock = None
+            
         return True
 
 
