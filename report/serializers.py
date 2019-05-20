@@ -209,10 +209,10 @@ class ReportForListSerializer(serializers.ModelSerializer):
             return False
 
         try:
-            UsersWithUnlockedMedia.objects.get(user=self.context['request'].user, report=obj)
+            UsersWithUnlockedMedia.objects.get(user=self.context['request'].user.id, report=obj.id)
 
             return False
-        except (UsersWithUnlockedMedia.DoesNotExist, Place.DoesNotExist) as e:
+        except (UsersWithUnlockedMedia.DoesNotExist) as e:
 
             return True
 
