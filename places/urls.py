@@ -11,6 +11,8 @@ urlpatterns = [
     url(r'^places/checkin/$', views.CheckinList.as_view()),
     url(r'^places/like/$', views.LikeList.as_view()),
     url(r'^cities/$', views.CityList.as_view()),
+    url(r'^places/(?P<pk>me)/$', views.SnippetDetail.as_view()),
+    url(r'^places/update_dancer/$', views.PlaceToDancer.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

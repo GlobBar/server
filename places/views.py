@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Count, Min, Sum, Avg
 from report.models import Report
+from apiusers.models import Profile
 from report.report_manager import ReportManager
 
 class SnippetList(APIView):
@@ -295,6 +296,13 @@ class SnippetDetail(APIView):
             raise Http404
 
     def get(self, request, pk, format=None):
+        if pk == 'me':
+            try:
+                profile = Profile.objects.get(user=request.user)
+                pk = profile.place.id
+            except:
+                raise Http404
+
         limit_from = str(request.GET.get('limit_from'))
         limit_count = str(request.GET.get('limit_count'))
 
@@ -697,3 +705,27 @@ class CityList(APIView):
         city_serializer = CitySerializer(cities, many=True)
 
         return Response({'cities': city_serializer.data})
+
+
+class PlaceToDancer(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    # Create Like
+    def post(self, request, format=None):
+        place_id = request.POST.get('place_pk')
+        try:
+            place = Place.objects.get(id=place_id)
+        except:
+            raise Http404
+        try:
+            profile = Profile.objects.get(user=request.user)
+        except:
+            return Response({'message': 'Only dancer can update place'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if profile.type != 1:
+            return Response({'message': 'Only dancer can update place'}, status=status.HTTP_400_BAD_REQUEST)
+
+        profile.place = place
+        profile.save()
+
+        return Response({'message': 'successfully updated'}, status=status.HTTP_201_CREATED)
