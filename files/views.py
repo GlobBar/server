@@ -97,6 +97,7 @@ class ReportFileUploadView(APIView):
     def post(self, request, format=None):
         file_obj = request.data['file']
         place_pk = request.data['place_pk']
+        price = request.POST.get('price', None)
 
         try:
            description = request.data['description']
@@ -128,16 +129,11 @@ class ReportFileUploadView(APIView):
         expired_utc = report_manager.get_expired_time(report)
         report.expired = expired_utc
 
-        try:
-            profile = Profile.objects.get(user=user)
-            # type1: dancer
-            if profile.type == 1:
-                report.price = 100
-                report.is_locked = True
-            else:
-                report.price = 0
-        except:
+        if price is None:
             report.price = 0
+        else:
+            report.price = price
+            report.is_locked = True
             
         report.save()
 
@@ -182,6 +178,8 @@ class ReportVideoUploadView(APIView):
     def post(self, request, format=None):
         file_obj = request.data['file']
         place_pk = request.data['place_pk']
+        price = request.POST.get('price', None)
+
 
         try:
            description = request.data['description']
@@ -217,16 +215,11 @@ class ReportVideoUploadView(APIView):
             report_image=report_image
         )
 
-        try:
-            profile = Profile.objects.get(user=user)
-            # type1: dancer
-            if profile.type == 1:
-                report.price = 100
-                report.is_locked = True
-            else:
-                report.price = 0
-        except:
+        if price is None:
             report.price = 0
+        else:
+            report.price = price
+            report.is_locked = True
 
         report.save()
 
