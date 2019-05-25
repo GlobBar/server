@@ -720,12 +720,12 @@ class PlaceToDancer(APIView):
         try:
             profile = Profile.objects.get(user=request.user)
         except:
-            return Response({'message': 'Only dancer can update place'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'data': 'Only dancer can update place'}, status=status.HTTP_400_BAD_REQUEST)
 
         if profile.type != 1:
-            return Response({'message': 'Only dancer can update place'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'data': 'Only dancer can update place'}, status=status.HTTP_400_BAD_REQUEST)
 
         profile.place = place
         profile.save()
 
-        return Response({'message': 'successfully updated'}, status=status.HTTP_201_CREATED)
+        return Response({'data': 'successfully updated'}, status=status.HTTP_201_CREATED)
