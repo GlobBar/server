@@ -8,7 +8,7 @@ anyjson==0.3.3
 apns==2.0.1
 argparse==1.2.1
 billiard==3.3.0.23
-celery==3.1.23
+celery==5.2.2
 django-appconf==1.0.1
 django-braces==1.8.1
 django-celery==3.1.17
