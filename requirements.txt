@@ -1,7 +1,7 @@
 Django==1.9.0
 Django-Pushy==0.1.11
 MySQL-python==1.2.5
-Pillow==3.1.1
+Pillow==9.0.0
 PyJWT==1.4.0
 amqp==1.4.9
 anyjson==0.3.3
